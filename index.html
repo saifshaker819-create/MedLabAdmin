@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>بوابة الطالب — كلية طب الأسنان</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 100%);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #e8eaf0;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 20%, rgba(79,142,247,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(110,231,183,0.10) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.card {
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  backdrop-filter: blur(20px);
+}
+.logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.logo-icon {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #4f8ef7, #6ee7b7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 12px;
+  box-shadow: 0 8px 24px rgba(79,142,247,0.4);
+}
+.logo h1 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.logo p { font-size: 12px; color: #9ca3af; }
+
+/* SEARCH SCREEN */
+#screen-search { display: block; }
+.search-label {
+  font-size: 13px; font-weight: 600; color: #9ca3af;
+  margin-bottom: 8px; display: block;
+}
+.search-input {
+  width: 100%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: #e8eaf0;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.3s;
+  margin-bottom: 12px;
+}
+.search-input:focus {
+  border-color: #4f8ef7;
+  box-shadow: 0 0 0 3px rgba(79,142,247,0.2);
+}
+.search-input::placeholder { color: #6b7280; }
+.btn-search {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #4f8ef7, #6ba3ff);
+  border: none;
+  color: #fff;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(79,142,247,0.4);
+}
+.btn-search:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,142,247,0.5); }
+.btn-search:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* RESULTS */
+.results-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.result-item {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.result-item:hover {
+  background: rgba(79,142,247,0.15);
+  border-color: rgba(79,142,247,0.4);
+}
+.result-name { font-size: 15px; font-weight: 700; }
+.result-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+.result-arrow { color: #4f8ef7; font-size: 18px; }
+
+/* QR SCREEN */
+#screen-qr { display: none; text-align: center; }
+.student-badge {
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+.student-badge .name { font-size: 17px; font-weight: 800; }
+.student-badge .meta { font-size: 12px; color: #9ca3af; margin-top: 3px; }
+
+#qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 20px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  width: fit-content;
+}
+
+.btn-download {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #059669, #10b981);
+  border: none;
+  color: #fff;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 16px rgba(16,185,129,0.4);
+  margin-bottom: 10px;
+}
+.btn-download:hover { transform: translateY(-2px); }
+.btn-back {
+  width: 100%;
+  padding: 11px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #9ca3af;
+  font-family: 'Tajawal', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-back:hover { background: rgba(255,255,255,0.12); color: #e8eaf0; }
+
+.info-box {
+  background: rgba(251,191,36,0.1);
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #fbbf24;
+  margin-bottom: 16px;
+  text-align: right;
+  line-height: 1.7;
+}
+
+/* STATUS */
+.status {
+  text-align: center;
+  padding: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+.status.error { color: #ef4444; }
+.status.loading::after {
+  content: ''; display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid #4f8ef7;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🦷</div>
+    <h1>بوابة الطالب</h1>
+    <p>كلية طب الأسنان — جامعة ذي قار</p>
+  </div>
+
+  <!-- SEARCH SCREEN -->
+  <div id="screen-search">
+    <label class="search-label">ابحث عن اسمك</label>
+    <input class="search-input" id="nameInput" type="text"
+      placeholder="أدخل اسمك أو جزء منه..."
+      oninput="onSearchInput()"
+      onkeydown="if(event.key==='Enter') searchStudent()">
+    <button class="btn-search" id="btnSearch" onclick="searchStudent()">🔍 بحث</button>
+    <div id="search-status"></div>
+    <div class="results-list" id="results-list"></div>
+  </div>
+
+  <!-- QR SCREEN -->
+  <div id="screen-qr">
+    <div class="student-badge">
+      <div class="name" id="qr-student-name"></div>
+      <div class="meta" id="qr-student-meta"></div>
+    </div>
+    <div class="info-box">
+      ⚠️ احتفظ بهذا الـ QR Code — سيستخدمه الأستاذ لتسجيل حضورك.<br>
+      لا تشارك هذا الكود مع أحد.
+    </div>
+    <div id="qr-wrap"></div>
+    <button class="btn-download" onclick="downloadMyQr()">📥 تنزيل QR على هاتفي</button>
+    <button class="btn-back" onclick="goBack()">← بحث آخر</button>
+  </div>
+</div>
+
+<script>
+// ===================== FIREBASE CONFIG =====================
+// *** يجب أن تكون نفس إعدادات Firebase في ملف الأستاذ ***
+var firebaseConfig = {
+  apiKey: "AIzaSyDKIzupfMwTFKHGKpinH0S2KJBPjVM_DrQ",
+  authDomain: "dental-absences.firebaseapp.com",
+  databaseURL: "https://dental-absences-default-rtdb.firebaseio.com",
+  projectId: "dental-absences",
+  storageBucket: "dental-absences.firebasestorage.app",
+  messagingSenderId: "152357027805",
+  appId: "1:152357027805:web:e5650ae3960e79de41c034"
+};
+
+if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+var db = firebase.database();
+
+// ===================== STATE =====================
+var allStudents = [];
+var allGroups = [];
+var allStages = [];
+var selectedStudent = null;
+var dataLoaded = false;
+
+// Load data from Firebase
+db.ref('dentalPublic').once('value', function(snap) {
+  var data = snap.val();
+  if (data) {
+    allStudents = data.students || [];
+    allGroups   = data.groups   || [];
+    allStages   = data.stages   || [];
+    dataLoaded = true;
+  } else {
+    showStatus('لا توجد بيانات في قاعدة البيانات', 'error');
+  }
+}, function(err) {
+  showStatus('تعذّر الاتصال بقاعدة البيانات — تأكد من الاتصال بالإنترنت', 'error');
+});
+
+// ===================== SEARCH =====================
+function onSearchInput() {
+  var q = document.getElementById('nameInput').value.trim();
+  if (!q) {
+    document.getElementById('results-list').innerHTML = '';
+    document.getElementById('search-status').innerHTML = '';
+  }
+}
+
+function searchStudent() {
+  if (!dataLoaded) { showStatus('⏳ جاري تحميل البيانات...', 'loading'); return; }
+  var q = document.getElementById('nameInput').value.trim().toLowerCase();
+  if (!q) { showStatus('أدخل اسمك أولاً', 'error'); return; }
+
+  var matches = allStudents.filter(function(st) {
+    return st.name.toLowerCase().includes(q);
+  });
+
+  document.getElementById('search-status').innerHTML = '';
+  var list = document.getElementById('results-list');
+
+  if (!matches.length) {
+    list.innerHTML = '';
+    showStatus('لم يتم العثور على اسم مطابق — حاول بجزء آخر من اسمك', 'error');
+    return;
+  }
+
+  var html = '';
+  matches.slice(0, 10).forEach(function(st) {
+    var group = allGroups.find(function(g) { return g.id === st.groupId; });
+    var stage = allStages.find(function(s) { return s.id === st.stageId; });
+    html += '<div class="result-item" onclick="selectStudent(' + st.id + ')">' +
+      '<div>' +
+        '<div class="result-name">' + st.name + '</div>' +
+        '<div class="result-meta">' + (stage ? stage.name : '') + ' · ' + (group ? group.name : '') + '</div>' +
+      '</div>' +
+      '<span class="result-arrow">‹</span>' +
+    '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function selectStudent(studentId) {
+  var st = allStudents.find(function(s) { return s.id === studentId; });
+  if (!st) return;
+  selectedStudent = st;
+  var group = allGroups.find(function(g) { return g.id === st.groupId; });
+  var stage = allStages.find(function(s) { return s.id === st.stageId; });
+
+  document.getElementById('qr-student-name').textContent = st.name;
+  document.getElementById('qr-student-meta').textContent =
+    (stage ? stage.name : '') + ' · ' + (group ? group.name : '');
+
+  // Build QR
+  document.getElementById('qr-wrap').innerHTML = '';
+  new QRCode(document.getElementById('qr-wrap'), {
+    text: 'DENTAL_STU_' + st.id,
+    width: 220,
+    height: 220,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  // Switch screen
+  document.getElementById('screen-search').style.display = 'none';
+  document.getElementById('screen-qr').style.display = 'block';
+}
+
+function goBack() {
+  document.getElementById('screen-qr').style.display = 'none';
+  document.getElementById('screen-search').style.display = 'block';
+  document.getElementById('results-list').innerHTML = '';
+  document.getElementById('nameInput').value = '';
+  document.getElementById('search-status').innerHTML = '';
+  selectedStudent = null;
+}
+
+// ===================== DOWNLOAD =====================
+function downloadMyQr() {
+  if (!selectedStudent) return;
+  var wrap = document.getElementById('qr-wrap');
+  var canvas = wrap.querySelector('canvas');
+  if (!canvas) {
+    var img = wrap.querySelector('img');
+    if (!img) { alert('حدث خطأ في توليد QR'); return; }
+    var c = document.createElement('canvas');
+    c.width = img.naturalWidth || 220;
+    c.height = img.naturalHeight || 220;
+    c.getContext('2d').drawImage(img, 0, 0);
+    canvas = c;
+  }
+
+  // Add name label below QR
+  var finalCanvas = document.createElement('canvas');
+  finalCanvas.width = canvas.width;
+  finalCanvas.height = canvas.height + 48;
+  var ctx = finalCanvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+  ctx.drawImage(canvas, 0, 0);
+  ctx.fillStyle = '#111111';
+  ctx.font = 'bold 16px Tajawal, Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(selectedStudent.name, finalCanvas.width / 2, canvas.height + 30);
+
+  var link = document.createElement('a');
+  link.download = 'QR_' + selectedStudent.name + '.png';
+  link.href = finalCanvas.toDataURL('image/png');
+  link.click();
+}
+
+// ===================== HELPERS =====================
+function showStatus(msg, type) {
+  var el = document.getElementById('search-status');
+  el.innerHTML = '<div class="status ' + (type||'') + '">' + msg + '</div>';
+}
+</script>
+</body>
+</html>

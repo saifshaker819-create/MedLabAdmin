@@ -2,415 +2,1697 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>بوابة الطالب — كلية طب الأسنان</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedLab Pro — لوحة التحكم</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
-body {
-  font-family: 'Tajawal', sans-serif;
-  background: linear-gradient(135deg, #0f1117 0%, #1a1f2e 100%);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: #e8eaf0;
+:root{
+  --primary:#00d4ff;--primary-dark:#0099bb;--secondary:#8b3fff;
+  --accent:#00ff9d;--danger:#ff2244;--warning:#ffcc00;--success:#00e87a;
+  --bg-dark:#04080f;--bg-card:rgba(255,255,255,0.04);--bg-glass:rgba(255,255,255,0.06);
+  --border:rgba(0,212,255,0.22);--text:#ffffff;--text2:rgba(255,255,255,0.6);
+  --font-family:'Inter','Cairo',sans-serif;
+  --bg-body:#04080f;--bg-modal:#070d1c;--bg-input:rgba(255,255,255,0.05);
+  --bg-input-focus:rgba(0,212,255,0.06);--shadow-color:rgba(0,0,0,0.7);
 }
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 70% 50% at 20% 20%, rgba(79,142,247,0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(110,231,183,0.10) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-.card {
-  position: relative;
-  z-index: 1;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 20px;
-  padding: 32px 28px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  backdrop-filter: blur(20px);
-}
-.logo {
-  text-align: center;
-  margin-bottom: 28px;
-}
-.logo-icon {
-  width: 64px; height: 64px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #4f8ef7, #6ee7b7);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 30px;
-  margin: 0 auto 12px;
-  box-shadow: 0 8px 24px rgba(79,142,247,0.4);
-}
-.logo h1 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
-.logo p { font-size: 12px; color: #9ca3af; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:var(--font-family);font-size:15px}
+body{background:var(--bg-body);color:var(--text);direction:rtl}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 80% 60% at 15% 10%,rgba(0,212,255,0.055) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 50% at 85% 80%,rgba(139,63,255,0.05) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
 
-/* SEARCH SCREEN */
-#screen-search { display: block; }
-.search-label {
-  font-size: 13px; font-weight: 600; color: #9ca3af;
-  margin-bottom: 8px; display: block;
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(4,8,20,0.95);backdrop-filter:blur(14px);
+  border-bottom:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:62px;
+  box-shadow:0 2px 20px rgba(0,0,0,0.4)
 }
-.search-input {
-  width: 100%;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 12px;
-  padding: 13px 16px;
-  color: #e8eaf0;
-  font-family: 'Tajawal', sans-serif;
-  font-size: 15px;
-  outline: none;
-  transition: all 0.3s;
-  margin-bottom: 12px;
+.topbar-brand{display:flex;align-items:center;gap:12px}
+.topbar-logo{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;color:#04080f;flex-shrink:0
 }
-.search-input:focus {
-  border-color: #4f8ef7;
-  box-shadow: 0 0 0 3px rgba(79,142,247,0.2);
+.topbar-title h1{font-size:16px;font-weight:900;color:var(--primary);letter-spacing:.5px}
+.topbar-title p{font-size:10px;color:var(--text2);font-weight:600;margin-top:1px}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.tb-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;
+  background:rgba(139,63,255,0.12);
+  border:1px solid rgba(139,63,255,0.3);
+  color:var(--secondary);font-size:11px;font-weight:700
 }
-.search-input::placeholder { color: #6b7280; }
-.btn-search {
-  width: 100%;
-  padding: 13px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #4f8ef7, #6ba3ff);
-  border: none;
-  color: #fff;
-  font-family: 'Tajawal', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 16px rgba(79,142,247,0.4);
-}
-.btn-search:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79,142,247,0.5); }
-.btn-search:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.tb-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
 
-/* RESULTS */
-.results-list {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 260px;
-  overflow-y: auto;
-}
-.result-item {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.result-item:hover {
-  background: rgba(79,142,247,0.15);
-  border-color: rgba(79,142,247,0.4);
-}
-.result-name { font-size: 15px; font-weight: 700; }
-.result-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
-.result-arrow { color: #4f8ef7; font-size: 18px; }
+/* ── LAYOUT ── */
+.page{max-width:1060px;margin:0 auto;padding:28px 20px 60px;position:relative;z-index:1}
 
-/* QR SCREEN */
-#screen-qr { display: none; text-align: center; }
-.student-badge {
-  background: rgba(79,142,247,0.1);
-  border: 1px solid rgba(79,142,247,0.3);
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 20px;
+/* ── SECTION HEADER ── */
+.sec-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;padding-bottom:14px;
+  border-bottom:1.5px solid var(--border)
 }
-.student-badge .name { font-size: 17px; font-weight: 800; }
-.student-badge .meta { font-size: 12px; color: #9ca3af; margin-top: 3px; }
+.sec-title{font-size:17px;font-weight:900;color:var(--secondary)}
+.sec-subtitle{font-size:11px;color:var(--text2);margin-top:2px}
 
-#qr-wrap {
-  display: flex;
-  justify-content: center;
-  margin: 0 auto 20px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 16px;
-  width: fit-content;
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.scard{
+  background:var(--bg-card);border:1.5px solid var(--border);border-radius:14px;
+  padding:18px 16px;text-align:center;transition:all .2s;position:relative;overflow:hidden
 }
+.scard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--c,rgba(0,212,255,.04)),transparent);pointer-events:none}
+.scard:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,212,255,.08)}
+.scard-val{font-size:28px;font-weight:900;color:var(--cv,var(--primary))}
+.scard-lbl{font-size:11px;color:var(--text2);margin-top:4px;font-weight:600}
+.scard-icon{font-size:22px;margin-bottom:6px}
 
-.btn-download {
-  width: 100%;
-  padding: 13px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #059669, #10b981);
-  border: none;
-  color: #fff;
-  font-family: 'Tajawal', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 16px rgba(16,185,129,0.4);
-  margin-bottom: 10px;
+/* ── CARDS ── */
+.card{
+  background:var(--bg-card);border:1.5px solid var(--border);
+  border-radius:16px;padding:24px;margin-bottom:20px
 }
-.btn-download:hover { transform: translateY(-2px); }
-.btn-back {
-  width: 100%;
-  padding: 11px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: #9ca3af;
-  font-family: 'Tajawal', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
+.card-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)
 }
-.btn-back:hover { background: rgba(255,255,255,0.12); color: #e8eaf0; }
+.card-title{font-size:14px;font-weight:800;color:var(--primary);display:flex;align-items:center;gap:8px}
 
-.info-box {
-  background: rgba(251,191,36,0.1);
-  border: 1px solid rgba(251,191,36,0.3);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 12px;
-  color: #fbbf24;
-  margin-bottom: 16px;
-  text-align: right;
-  line-height: 1.7;
+/* ── FORM ── */
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:5px}
+.fc{
+  width:100%;padding:10px 13px;border-radius:10px;
+  border:1.5px solid var(--border);
+  background:var(--bg-input);color:var(--text);
+  font-family:var(--font-family);font-size:13px;outline:none;
+  transition:border-color .2s,background .2s
 }
+.fc:focus{border-color:var(--primary);background:var(--bg-input-focus)}
+.fc::placeholder{color:rgba(255,255,255,.3)}
+.fc option{background:#070d1c;color:#fff}
+textarea.fc{resize:vertical}
+.req{color:var(--danger)}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 
-/* STATUS */
-.status {
-  text-align: center;
-  padding: 16px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #9ca3af;
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:9px 18px;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--bg-glass);color:var(--text);
+  font-family:var(--font-family);font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .2s;white-space:nowrap
 }
-.status.error { color: #ef4444; }
-.status.loading::after {
-  content: ''; display: inline-block;
-  width: 14px; height: 14px;
-  border: 2px solid #4f8ef7;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.btn:hover{transform:translateY(-1px);border-color:var(--primary);color:var(--primary)}
+.btn-p{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#000 !important;border-color:transparent !important}
+.btn-p:hover{box-shadow:0 4px 16px rgba(0,212,255,.35);border-color:transparent !important}
+.btn-d{background:rgba(255,34,68,.12);color:var(--danger) !important;border-color:rgba(255,34,68,.35) !important}
+.btn-d:hover{background:rgba(255,34,68,.22)}
+.btn-w{background:rgba(255,204,0,.10);color:var(--warning) !important;border-color:rgba(255,204,0,.3) !important}
+.btn-s{background:var(--bg-glass);color:var(--text2)}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:8px}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:9px}
 
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+/* ── USER ROW ── */
+.user-row{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;background:rgba(255,255,255,.03);
+  border:1px solid var(--border);border-radius:12px;margin-bottom:8px;
+  flex-wrap:wrap;transition:all .2s
+}
+.user-row:hover{border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.03)}
+.uname{font-weight:700;color:var(--text);font-size:12px;flex:1}
+.badge-perm{background:rgba(0,245,147,.15);color:var(--success);border:1px solid rgba(0,245,147,.3);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.badge-temp{background:rgba(255,214,10,.15);color:var(--warning);border:1px solid rgba(255,214,10,.3);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.badge-exp{background:rgba(255,77,109,.15);color:var(--danger);border:1px solid rgba(255,77,109,.3);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+
+/* ── BADGE ── */
+.bdg{display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;border:1px solid transparent}
+.bdg-p{background:rgba(0,212,255,.1);color:var(--primary);border-color:rgba(0,212,255,.25)}
+.bdg-ok{background:rgba(0,232,122,.1);color:var(--success);border-color:rgba(0,232,122,.25)}
+.bdg-d{background:rgba(255,34,68,.1);color:var(--danger);border-color:rgba(255,34,68,.25)}
+.bdg-w{background:rgba(255,204,0,.1);color:var(--warning);border-color:rgba(255,204,0,.25)}
+
+/* ── TABS ── */
+.tabs-nav{display:flex;gap:6px;background:rgba(255,255,255,.04);border-radius:12px;padding:5px;margin-bottom:24px;flex-wrap:wrap}
+.tab-btn{
+  padding:9px 18px;border-radius:9px;border:none;background:transparent;
+  color:var(--text2);font-family:var(--font-family);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px
+}
+.tab-btn:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.tab-btn.active{background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(139,63,255,.08));color:var(--primary);border:1px solid rgba(0,212,255,.25)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── MODAL ── */
+.moverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;
+  display:none;align-items:center;justify-content:center;padding:16px;
+  backdrop-filter:blur(4px)
+}
+.moverlay.open,.moverlay[style*="flex"]{display:flex}
+.modal{
+  background:var(--bg-modal);border:1.5px solid var(--border);
+  border-radius:18px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.8),0 0 40px rgba(0,212,255,.07);
+  animation:mIn .28s ease
+}
+@keyframes mIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:none}}
+.mhdr{
+  padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:space-between
+}
+.mtitle{font-size:14px;font-weight:800;color:var(--text)}
+.mclose{
+  width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06);color:var(--text2);cursor:pointer;
+  font-size:16px;display:flex;align-items:center;justify-content:center;
+  transition:all .2s
+}
+.mclose:hover{background:rgba(255,34,68,.18);color:var(--danger);border-color:var(--danger)}
+.mbody{padding:20px 22px;max-height:70vh;overflow-y:auto}
+.mftr{padding:14px 22px;border-top:1px solid rgba(255,255,255,.07);display:flex;justify-content:flex-end;gap:10px}
+
+/* ── TOGGLES ── */
+.perm-tog{width:38px;height:20px;background:rgba(255,255,255,.08);border-radius:10px;position:relative;cursor:pointer;transition:all .2s;border:1px solid var(--border);flex-shrink:0}
+.perm-tog.on{background:linear-gradient(90deg,var(--success),#00c470);border-color:transparent}
+.perm-tog-t{width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:1px;right:1px;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.perm-tog.on .perm-tog-t{right:calc(100% - 17px)}
+
+/* ── SESSION CARD ── */
+.session-card{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;transition:all .2s;margin-bottom:8px}
+.session-card:hover{border-color:var(--primary);background:rgba(0,212,255,.04)}
+.session-kick-btn{padding:5px 10px;border-radius:7px;border:1px solid rgba(255,34,68,.4);background:rgba(255,34,68,.1);color:var(--danger);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;font-family:var(--font-family)}
+.session-kick-btn:hover{background:rgba(255,34,68,.25)}
+
+/* ── LOGIN LOG ── */
+.login-log-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;transition:background .15s}
+.login-log-row:hover{background:rgba(0,212,255,.04)}
+
+/* ── STRENGTH BAR ── */
+.str-wrap{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:5px}
+#chpw-strength-bar{height:100%;border-radius:2px;width:0%;transition:all .3s}
+
+/* ── NOTIFS ── */
+#notif-wrap{position:fixed;bottom:24px;right:24px;z-index:999999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.notif{
+  background:rgba(7,13,28,.97);border:1.5px solid var(--border);border-radius:14px;
+  padding:14px 18px;display:flex;align-items:flex-start;gap:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:260px;max-width:340px;
+  animation:nIn .3s ease;pointer-events:all
+}
+@keyframes nIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+.notif h4{font-size:13px;font-weight:800;color:var(--text);margin-bottom:2px}
+.notif p{font-size:11px;color:var(--text2);line-height:1.6}
+
+/* ── DIAG ── */
+#diag-result{font-size:11px;color:var(--text2);background:rgba(0,0,0,.25);border-radius:8px;padding:12px;min-height:44px;white-space:pre-wrap;font-family:monospace;display:none}
+
+/* ── ERROR BOX ── */
+.err-box{display:none;background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--danger);margin-top:8px}
+
+/* ── EMPTY ── */
+.empty-state{text-align:center;padding:36px;color:var(--text2)}
+.empty-state div:first-child{font-size:32px;margin-bottom:10px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,212,255,.25);border-radius:3px}
+
+/* ── LIGHT MODE ── */
+body.light-mode{
+  --bg-body:#f0f2f5;--bg-card:#fff;--bg-glass:#fff;--bg-modal:#fff;
+  --bg-input:#e8ecf2;--bg-input-focus:#dceef8;--border:#b0bfcc;
+  --text:#000;--text2:#2d3a4a;--primary:#005f99;--primary-dark:#004477;
+  --secondary:#5500bb;--success:#006622;--danger:#bb0011;--warning:#995500;
+}
+body.light-mode{background:var(--bg-body);color:var(--text)}
+body.light-mode::before{display:none}
+body.light-mode .topbar{background:#fff;border-bottom-color:#dde4ec;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+body.light-mode .card{background:#fff;border-color:#dde4ec;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+body.light-mode .modal{background:#fff;border-color:#dde4ec;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+body.light-mode .mhdr,.body.light-mode .mftr{background:#f8fafc}
+body.light-mode .fc{background:#f0f3f7;color:#000;border-color:#ccd4dc}
+body.light-mode .fc:focus{background:#e8f4fa;border-color:var(--primary)}
+body.light-mode .fc option{background:#fff;color:#000}
+body.light-mode .fl{color:#4a5a6a}
+body.light-mode .user-row{background:#f4f6f9;border-color:#dde4ec}
+body.light-mode .tabs-nav{background:#e8edf3}
+body.light-mode .tab-btn.active{background:linear-gradient(135deg,rgba(0,95,153,.1),rgba(85,0,187,.06));color:var(--primary);border-color:rgba(0,95,153,.25)}
+body.light-mode .scard{background:#fff;border-color:#dde4ec}
+body.light-mode .notif{background:#fff;border-color:#dde4ec;box-shadow:0 4px 16px rgba(0,0,0,.12)}
+body.light-mode .notif h4{color:#000}
+body.light-mode .notif p{color:#4a5a6a}
+body.light-mode .session-card{background:#f4f6f9;border-color:#dde4ec}
+body.light-mode #diag-result{background:rgba(0,0,0,.05);color:#2d3a4a}
+body.light-mode .login-log-row{border-bottom-color:#eef2f6}
+body.light-mode .perm-tog{background:rgba(0,0,0,.08);border-color:#c8d4e0}
+
+/* ── WELCOME POPUP ── */
+.welcome-popup-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px}
+.welcome-popup-box{background:linear-gradient(135deg,#070d1c,#0d1528);border:2px solid var(--primary);border-radius:18px;max-width:480px;width:100%;box-shadow:0 0 60px rgba(0,212,255,.25),0 20px 60px rgba(0,0,0,.8);animation:mIn .4s ease}
+.welcome-popup-hdr{padding:20px 22px 16px;border-bottom:1px solid rgba(0,212,255,.15);display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.welcome-popup-body{padding:18px 22px 20px;font-size:13px;line-height:1.9;color:#fff}
+.welcome-popup-close{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;flex-shrink:0}
+.welcome-popup-close:hover{background:rgba(255,34,68,.18);color:var(--danger);border-color:var(--danger)}
+
+/* ── WM PREVIEW ── */
+#wm-preview{background:#070d1c;border:2px solid var(--primary);border-radius:12px;padding:16px 18px}
+body.light-mode #wm-preview{background:#f0f4ff;border-color:var(--primary)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .fr3{grid-template-columns:1fr 1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .fr2{grid-template-columns:1fr}
+  .page{padding:16px 12px 50px}
+  .topbar{padding:0 14px}
+}
+@media(max-width:480px){
+  .fr3,.stats-row{grid-template-columns:1fr}
+  .tabs-nav{gap:4px}
+  .tab-btn{font-size:11px;padding:7px 12px}
+}
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="logo">
-    <div class="logo-icon">🦷</div>
-    <h1>بوابة الطالب</h1>
-    <p>كلية طب الأسنان — جامعة ذي قار</p>
-  </div>
-
-  <!-- SEARCH SCREEN -->
-  <div id="screen-search">
-    <label class="search-label">ابحث عن اسمك</label>
-    <input class="search-input" id="nameInput" type="text"
-      placeholder="أدخل اسمك أو جزء منه..."
-      oninput="onSearchInput()"
-      onkeydown="if(event.key==='Enter') searchStudent()">
-    <button class="btn-search" id="btnSearch" onclick="searchStudent()">🔍 بحث</button>
-    <div id="search-status"></div>
-    <div class="results-list" id="results-list"></div>
-  </div>
-
-  <!-- QR SCREEN -->
-  <div id="screen-qr">
-    <div class="student-badge">
-      <div class="name" id="qr-student-name"></div>
-      <div class="meta" id="qr-student-meta"></div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">🛡️</div>
+    <div class="topbar-title">
+      <h1>لوحة التحكم</h1>
+      <p>MedLab Pro — Admin Panel</p>
     </div>
-    <div class="info-box">
-      ⚠️ احتفظ بهذا الـ QR Code — سيستخدمه الأستاذ لتسجيل حضورك.<br>
-      لا تشارك هذا الكود مع أحد.
+  </div>
+  <div class="topbar-actions">
+    <div class="tb-badge" id="fb-status-badge">
+      <div class="tb-dot" id="fb-dot" style="background:var(--warning)"></div>
+      <span id="fb-status-lbl">جاري الاتصال...</span>
     </div>
-    <div id="qr-wrap"></div>
-    <button class="btn-download" onclick="downloadMyQr()">📥 تنزيل QR على هاتفي</button>
-    <button class="btn-back" onclick="goBack()">← بحث آخر</button>
+    <button class="btn btn-sm" onclick="toggleTheme()" id="theme-btn" title="تبديل الوضع">🌙</button>
+    <button class="btn btn-sm btn-d" onclick="if(confirm('خروج من لوحة التحكم؟'))location.href='index.html'">✕ خروج</button>
   </div>
 </div>
 
+<!-- PAGE -->
+<div class="page">
+
+  <!-- STATS -->
+  <div class="stats-row" id="stats-row">
+    <div class="scard" style="--cv:var(--primary);--c:rgba(0,212,255,.06)">
+      <div class="scard-icon">👥</div>
+      <div class="scard-val" id="st-total">—</div>
+      <div class="scard-lbl">إجمالي المستخدمين</div>
+    </div>
+    <div class="scard" style="--cv:var(--success);--c:rgba(0,232,122,.06)">
+      <div class="scard-icon">♾️</div>
+      <div class="scard-val" id="st-perm">—</div>
+      <div class="scard-lbl">حسابات دائمة</div>
+    </div>
+    <div class="scard" style="--cv:var(--warning);--c:rgba(255,204,0,.06)">
+      <div class="scard-icon">⏳</div>
+      <div class="scard-val" id="st-temp">—</div>
+      <div class="scard-lbl">مؤقتين نشطين</div>
+    </div>
+    <div class="scard" style="--cv:var(--danger);--c:rgba(255,34,68,.06)">
+      <div class="scard-icon">🚫</div>
+      <div class="scard-val" id="st-dis">—</div>
+      <div class="scard-lbl">معطّلين</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('users')" id="tab-users">👥 إدارة المستخدمين</button>
+    <button class="tab-btn" onclick="switchTab('notif')" id="tab-notif">📢 الإشعارات</button>
+    <button class="tab-btn" onclick="switchTab('monitor')" id="tab-monitor">🖥️ المراقبة</button>
+    <button class="tab-btn" onclick="switchTab('messages')" id="tab-messages">💬 الرسائل والنسخ</button>
+    <button class="tab-btn" onclick="switchTab('firebase')" id="tab-firebase">🔧 Firebase</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 1 — USERS
+  ══════════════════════════════════════════ -->
+  <div class="tab-pane active" id="pane-users">
+
+    <!-- Create User -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">➕ إنشاء مستخدم جديد</div>
+      </div>
+      <div class="fr3" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">اسم المستخدم <span style="font-size:10px;color:var(--text2)">(أحرف فقط)</span></label>
+          <div style="display:flex;gap:7px">
+            <input class="fc" id="adm-uname" placeholder="مثال: lab1" oninput="this.value=this.value.replace(/[^a-zA-Z]/g,'').toLowerCase()">
+            <button class="btn btn-s btn-sm" onclick="suggestUsername()" title="اقتراح اسم">🎲</button>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">كلمة المرور <span style="font-size:10px;color:var(--text2)">(أرقام فقط)</span></label>
+          <div style="display:flex;gap:7px">
+            <input class="fc" id="adm-pass" placeholder="مثال: 123456" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <button class="btn btn-s btn-sm" onclick="suggestPassword()" title="اقتراح رقم">🎲</button>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">نوع الحساب</label>
+          <select class="fc" id="adm-type">
+            <option value="permanent">♾️ دائم</option>
+            <option value="week">📅 أسبوع (7 أيام)</option>
+            <option value="month">📅 شهر (30 يوم)</option>
+            <option value="year">📅 سنة (365 يوم)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr2" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">🏥 اسم المختبر <span class="req">*</span></label>
+          <input class="fc" id="adm-labname" placeholder="مثال: مختبر النور الطبي">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">📍 العنوان / المدينة</label>
+          <input class="fc" id="adm-labaddr" placeholder="مثال: بغداد - المنصور">
+        </div>
+      </div>
+      <div id="adm-err" class="err-box"></div>
+      <button class="btn btn-p" onclick="adminCreateUser()" style="margin-top:4px">💾 إنشاء المستخدم</button>
+    </div>
+
+    <!-- Users List -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">
+          👥 قائمة المستخدمين
+          <span class="bdg bdg-p" id="users-count-lbl">0</span>
+        </div>
+        <button class="btn btn-s btn-sm" onclick="renderAdminUsers()">🔄 تحديث</button>
+      </div>
+      <div id="admin-users-list">
+        <div class="empty-state">
+          <div>👥</div>
+          <div>جاري التحميل...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /pane-users -->
+
+  <!-- ══════════════════════════════════════════
+       TAB 2 — NOTIFICATIONS
+  ══════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-notif">
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">📢 إرسال إشعار للمستخدمين</div>
+      </div>
+      <div class="fr3" style="margin-bottom:12px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">المستلم</label>
+          <select class="fc" id="adm-notif-to">
+            <option value="all">📢 الجميع</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0;grid-column:span 2">
+          <label class="fl">العنوان الرئيسي</label>
+          <input class="fc" id="adm-notif-title" placeholder="مثال: تحديث النظام، تنبيه مهم...">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">تفاصيل الإشعار</label>
+        <textarea class="fc" id="adm-notif-body" rows="4" placeholder="اكتب نص الإشعار التفصيلي هنا..."></textarea>
+      </div>
+      <button class="btn btn-p" onclick="adminSendNotif()">📤 إرسال الإشعار</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 3 — MONITORING
+  ══════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-monitor">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <!-- Active Sessions -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">🖥️ الجلسات النشطة</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-s btn-sm" onclick="loadActiveSessions()">🔄</button>
+            <button class="btn btn-sm btn-d" onclick="kickAllSessions()">🚫 طرد الجميع</button>
+          </div>
+        </div>
+        <div id="active-sessions-body">
+          <div class="empty-state"><div>🖥️</div><div style="font-size:12px">اضغط تحديث لعرض الجلسات</div></div>
+        </div>
+      </div>
+
+      <!-- Login Log -->
+      <div class="card">
+        <div class="card-hdr">
+          <div class="card-title">📊 سجل الدخول والخروج</div>
+          <div style="display:flex;gap:6px">
+            <select class="fc" id="loginlog-user-filter" style="width:auto;font-size:11px;padding:5px 8px" onchange="renderLoginLog()">
+              <option value="">الجميع</option>
+            </select>
+            <button class="btn btn-s btn-sm" onclick="loadLoginLog()">🔄</button>
+            <button class="btn btn-sm btn-d" onclick="clearLoginLog()">🗑️</button>
+          </div>
+        </div>
+        <div id="login-log-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px"></div>
+        <div id="login-log-body" style="max-height:360px;overflow-y:auto;border:1px solid var(--border);border-radius:9px">
+          <div class="empty-state"><div>📊</div><div style="font-size:12px">اضغط تحديث لعرض السجل</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 4 — MESSAGES & BACKUP
+  ══════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-messages">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+      <!-- Welcome Message -->
+      <div class="card" style="border-color:rgba(0,245,147,.2)">
+        <div class="card-hdr">
+          <div class="card-title" style="color:var(--success)">💬 رسالة ترحيب / تنبيه</div>
+        </div>
+        <div class="fg">
+          <label class="fl">إرسال إلى</label>
+          <select class="fc" id="wm-to"><option value="all">📢 جميع المستخدمين</option></select>
+        </div>
+        <div class="fg">
+          <label class="fl">نوع الرسالة</label>
+          <select class="fc" id="wm-type" style="margin-top:4px">
+            <option value="info">ℹ️ إعلام</option>
+            <option value="warning">⚠️ تحذير</option>
+            <option value="success">✅ خبر سار</option>
+            <option value="update">🔄 تحديث</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">أيقونة</label>
+          <input class="fc" id="wm-icon" value="📢" placeholder="إيموجي..." style="text-align:center;font-size:20px" oninput="_updateWmPreview()">
+        </div>
+        <div class="fg">
+          <label class="fl">عنوان الرسالة</label>
+          <input class="fc" id="wm-title" placeholder="مثال: تحديث النظام v2.5" oninput="_updateWmPreview()">
+        </div>
+        <div class="fg">
+          <label class="fl">نص الرسالة</label>
+          <textarea class="fc" id="wm-body" rows="3" placeholder="اكتب نص الرسالة هنا..." oninput="_updateWmPreview()"></textarea>
+        </div>
+        <!-- Preview -->
+        <div style="margin-top:4px;margin-bottom:14px">
+          <div style="font-size:11px;color:var(--text2);margin-bottom:6px">👁️ معاينة:</div>
+          <div id="wm-preview">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span id="wm-prev-icon" style="font-size:22px">📢</span>
+              <span id="wm-prev-title" style="font-size:13px;font-weight:800;color:var(--primary)">عنوان الرسالة</span>
+            </div>
+            <div id="wm-prev-body" style="font-size:12px;color:var(--text2);line-height:1.8">نص الرسالة...</div>
+          </div>
+        </div>
+        <button class="btn btn-p" onclick="sendWelcomeMsg()">📤 إرسال الرسالة</button>
+        <div style="font-size:11px;color:var(--text2);margin-top:8px">💬 تظهر كنافذة منبثقة عند دخول المستخدم</div>
+      </div>
+
+      <!-- Forced Backup -->
+      <div class="card" style="border-color:rgba(255,214,10,.2)">
+        <div class="card-hdr">
+          <div class="card-title" style="color:var(--warning)">🔒 نسخ احتياطي إجباري</div>
+        </div>
+        <div style="background:rgba(255,214,10,.07);border:1px solid rgba(255,214,10,.3);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px;color:var(--warning);line-height:1.7">
+          ⚠️ سيظهر للمستخدمين طلب إجباري لتنزيل نسخة احتياطية.<br>لن يتمكنوا من الإغلاق حتى يؤكدوا.
+        </div>
+        <div class="fg">
+          <label class="fl">إرسال إلى</label>
+          <select class="fc" id="fb-to"><option value="all">📢 جميع المستخدمين</option></select>
+        </div>
+        <div class="fg">
+          <label class="fl">رسالة للمستخدم</label>
+          <textarea class="fc" id="fb-message" rows="4" placeholder="سبب طلب النسخة الاحتياطية...">🔒 تنبيه: يرجى تنزيل نسخة احتياطية للحفاظ على بياناتك. هذا الإجراء إلزامي من إدارة النظام.</textarea>
+        </div>
+        <button class="btn btn-p" onclick="triggerForcedBackup()" style="background:linear-gradient(135deg,rgba(255,214,10,.7),rgba(255,150,0,.7));color:#000">🚀 إرسال طلب النسخة الاحتياطي</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 5 — FIREBASE
+  ══════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-firebase">
+    <div class="card" style="border-color:rgba(0,212,255,.3)">
+      <div class="card-hdr">
+        <div class="card-title">🔧 تشخيص Firebase</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        <button class="btn btn-p btn-sm" onclick="diagFirebase()">🔍 فحص الاتصال والبيانات</button>
+        <button class="btn btn-d btn-sm" onclick="cleanAllPasswords()">🔐 مسح كلمات المرور القديمة</button>
+        <button class="btn btn-w btn-sm" onclick="forceSyncToFirebase()">☁️ رفع البيانات المحلية لـ Firebase</button>
+      </div>
+      <div id="diag-result"></div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- NOTIF WRAP -->
+<div id="notif-wrap"></div>
+
+<!-- ════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════ -->
+
+<!-- Extend Sub -->
+<div class="moverlay" id="m-extend-sub">
+  <div class="modal" style="max-width:420px">
+    <div class="mhdr">
+      <div class="mtitle">📅 تمديد اشتراك: <span id="extend-uname-lbl" style="color:var(--primary)"></span></div>
+      <button class="mclose" onclick="closeModal('m-extend-sub')">×</button>
+    </div>
+    <div class="mbody">
+      <div id="extend-current-info" style="background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px"></div>
+      <div class="fg">
+        <label class="fl">اختر مدة التمديد</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <button class="btn btn-s" onclick="doExtendSub('week')" style="padding:13px;font-size:13px;font-weight:800">📅 أسبوع واحد<br><span style="font-size:10px;color:var(--text2);font-weight:600">+7 أيام</span></button>
+          <button class="btn btn-s" onclick="doExtendSub('month')" style="padding:13px;font-size:13px;font-weight:800">📅 شهر واحد<br><span style="font-size:10px;color:var(--text2);font-weight:600">+30 يوم</span></button>
+          <button class="btn btn-p" onclick="doExtendSub('year')" style="padding:13px;font-size:13px;font-weight:800">⭐ سنة كاملة<br><span style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600">+365 يوم</span></button>
+          <button class="btn" onclick="doExtendSub('permanent')" style="padding:13px;font-size:13px;font-weight:800;background:linear-gradient(135deg,rgba(139,63,255,.2),rgba(0,212,255,.1));border:1px solid var(--secondary);color:var(--secondary)">♾️ دائمي<br><span style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600">بلا انتهاء</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="mftr"><button class="btn btn-s" onclick="closeModal('m-extend-sub')">إلغاء</button></div>
+  </div>
+</div>
+
+<!-- Change PW -->
+<div class="moverlay" id="m-change-pw">
+  <div class="modal" style="max-width:380px">
+    <div class="mhdr">
+      <div class="mtitle">🔑 تغيير كلمة مرور: <span id="chpw-uname-lbl" style="color:var(--primary)"></span></div>
+      <button class="mclose" onclick="closeModal('m-change-pw')">×</button>
+    </div>
+    <div class="mbody">
+      <div style="background:rgba(255,200,0,.07);border:1px solid rgba(255,200,0,.3);border-radius:9px;padding:10px;font-size:11px;color:var(--warning);margin-bottom:14px">
+        ⚠️ سيؤدي تغيير كلمة المرور إلى تسجيل الخروج من جميع الأجهزة فوراً.
+      </div>
+      <div class="fg">
+        <label class="fl">كلمة المرور الجديدة <span style="font-size:10px;color:var(--text2)">(أرقام فقط)</span></label>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <input class="fc" id="chpw-new" type="password" placeholder="أدخل كلمة مرور جديدة..." autocomplete="new-password" style="flex:1" oninput="chpwStrength(this.value)">
+          <button class="btn btn-s btn-sm" onclick="document.getElementById('chpw-new').value=Math.floor(100000+Math.random()*900000).toString();chpwStrength(document.getElementById('chpw-new').value)">🎲</button>
+        </div>
+        <div class="str-wrap"><div id="chpw-strength-bar"></div></div>
+        <div id="chpw-strength-lbl" style="font-size:10px;color:var(--text2);margin-top:2px"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">تأكيد كلمة المرور</label>
+        <input class="fc" id="chpw-confirm" type="password" placeholder="أعد كتابة كلمة المرور..." autocomplete="new-password" style="margin-top:4px">
+      </div>
+      <div id="chpw-err" class="err-box"></div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-s" onclick="closeModal('m-change-pw')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveChangePw()">💾 تغيير كلمة المرور</button>
+    </div>
+  </div>
+</div>
+
+<!-- Permissions -->
+<div class="moverlay" id="m-permissions">
+  <div class="modal" style="max-width:620px">
+    <div class="mhdr">
+      <div class="mtitle">🛡️ تحديد الصلاحيات: <span id="perm-uname-lbl" style="color:var(--primary)"></span></div>
+      <button class="mclose" onclick="closeModal('m-permissions')">×</button>
+    </div>
+    <div class="mbody">
+      <div style="background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);border-radius:10px;padding:12px;margin-bottom:16px;font-size:11px;color:var(--text2)">
+        💡 حدد ما يستطيع هذا المستخدم فعله في النظام. اضغط حفظ لتطبيق الصلاحيات.
+      </div>
+      <div class="fg" style="margin-bottom:14px">
+        <label class="fl">الدور الجاهز (يطبق صلاحيات تلقائياً)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn btn-sm" onclick="applyRole('print_only')" style="background:rgba(255,214,10,.1);border-color:rgba(255,214,10,.35);color:var(--warning)">🖨️ طباعة فقط</button>
+          <button class="btn btn-sm" onclick="applyRole('results_only')" style="background:rgba(0,245,147,.1);border-color:rgba(0,245,147,.35);color:var(--success)">🧪 إدخال نتائج فقط</button>
+          <button class="btn btn-sm" onclick="applyRole('receptionist')" style="background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.35);color:var(--primary)">📋 استقبال</button>
+          <button class="btn btn-sm" onclick="applyRole('lab_tech')" style="background:rgba(0,232,122,.12);border-color:rgba(0,232,122,.4);color:var(--accent)">🔬 تقني مختبر</button>
+          <button class="btn btn-sm" onclick="applyRole('full_admin')" style="background:rgba(139,63,255,.15);border-color:rgba(139,63,255,.4);color:var(--secondary)">👑 أدمن كامل</button>
+        </div>
+      </div>
+      <div id="perm-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-s" onclick="closeModal('m-permissions')">إلغاء</button>
+      <button class="btn btn-p" onclick="savePermissions()">💾 حفظ الصلاحيات</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User -->
+<div class="moverlay" id="m-admin-edit-user">
+  <div class="modal" style="max-width:420px">
+    <div class="mhdr">
+      <div class="mtitle">✏️ تعديل المستخدم: <span id="edit-uname-lbl" style="color:var(--primary)"></span></div>
+      <button class="mclose" onclick="closeModal('m-admin-edit-user')">×</button>
+    </div>
+    <div class="mbody">
+      <div style="background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.3);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:var(--warning)">
+        ⚠️ تغيير اسم المستخدم أو كلمة المرور سيُسجّل الخروج من جميع الأجهزة فوراً.
+      </div>
+      <div class="fg">
+        <label class="fl">اسم المستخدم الجديد <span style="font-size:10px;color:var(--text2)">(اتركه فارغاً للإبقاء على الحالي)</span></label>
+        <input class="fc" id="edit-uname-new" placeholder="" autocomplete="off">
+      </div>
+      <div class="fg">
+        <label class="fl">كلمة المرور الجديدة <span style="font-size:10px;color:var(--text2)">(أرقام فقط — اتركها فارغة للإبقاء)</span></label>
+        <div style="display:flex;gap:6px">
+          <input class="fc" id="edit-pass-new" type="password" placeholder="أرقام فقط..." autocomplete="new-password" style="flex:1">
+          <button class="btn btn-s btn-sm" onclick="document.getElementById('edit-pass-new').value=Math.floor(100000+Math.random()*900000).toString()">🎲</button>
+        </div>
+      </div>
+      <div id="edit-user-err" class="err-box"></div>
+    </div>
+    <div class="mftr">
+      <button class="btn btn-s" onclick="closeModal('m-admin-edit-user')">إلغاء</button>
+      <button class="btn btn-p" id="edit-save-btn" onclick="">💾 حفظ التعديلات</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
 <script>
-// ===================== FIREBASE CONFIG =====================
-// *** يجب أن تكون نفس إعدادات Firebase في ملف الأستاذ ***
-var firebaseConfig = {
-  apiKey: "AIzaSyDKIzupfMwTFKHGKpinH0S2KJBPjVM_DrQ",
-  authDomain: "dental-absences.firebaseapp.com",
-  databaseURL: "https://dental-absences-default-rtdb.firebaseio.com",
-  projectId: "dental-absences",
-  storageBucket: "dental-absences.firebasestorage.app",
-  messagingSenderId: "152357027805",
-  appId: "1:152357027805:web:e5650ae3960e79de41c034"
+// ═══════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ═══════════════════════════════════════════════════
+const ADMIN_KEY    = 'medlab_admin_users';
+const LAB_DIR_KEY  = 'medlab_lab_directory';
+const LOGIN_LOG_KEY= 'medlab_login_log';
+
+let fbDb     = null;
+let fbAuth   = null;
+let fbReady  = false;
+let _fbLoadingPromise = null;
+let _fbUsersCache = null;
+let _extendTargetUser = null;
+let _chpwTargetUser   = null;
+let _permTargetUser   = null;
+let _editTargetUser   = null;
+
+// ═══════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════
+const FB_CONFIG = {
+  apiKey:            "AIzaSyCtaxVFLF3bveIgrwfXtsL2-onljl_woQo",
+  authDomain:        "rescuse.firebaseapp.com",
+  databaseURL:       "https://rescuse-default-rtdb.firebaseio.com",
+  projectId:         "rescuse",
+  storageBucket:     "rescuse.firebasestorage.app",
+  messagingSenderId: "846090206196",
+  appId:             "1:846090206196:web:953ddf6873bfccd1a717a1"
 };
 
-if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-var db = firebase.database();
+function loadFirebase(){
+  if(fbReady) return Promise.resolve(true);
+  if(_fbLoadingPromise) return _fbLoadingPromise;
+  _fbLoadingPromise = new Promise(resolve=>{
+    if(typeof firebase !== 'undefined'){ initFB(resolve); return; }
+    let loaded=0;
+    const urls=[
+      'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+      'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js',
+      'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js'
+    ];
+    urls.forEach(src=>{
+      const s=document.createElement('script');
+      s.src=src; s.async=false;
+      s.onload=()=>{ if(++loaded===urls.length) initFB(resolve); };
+      s.onerror=()=>{ _fbLoadingPromise=null; resolve(false); };
+      document.head.appendChild(s);
+    });
+  });
+  return _fbLoadingPromise;
+}
 
-// ===================== STATE =====================
-var allStudents = [];
-var allGroups = [];
-var allStages = [];
-var selectedStudent = null;
-var dataLoaded = false;
+function initFB(resolve){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    fbDb  = firebase.database();
+    fbAuth= firebase.auth();
+    fbReady=true;
+    fbAuth.signInAnonymously().catch(()=>{});
+    setFbStatus(true);
+    resolve(true);
+  }catch(e){ console.error(e); setFbStatus(false); resolve(false); }
+}
 
-// Load data from Firebase
-db.ref('dentalPublic').once('value', function(snap) {
-  var data = snap.val();
-  if (data) {
-    allStudents = data.students || [];
-    allGroups   = data.groups   || [];
-    allStages   = data.stages   || [];
-    dataLoaded = true;
-  } else {
-    showStatus('لا توجد بيانات في قاعدة البيانات', 'error');
+function setFbStatus(ok){
+  const dot=document.getElementById('fb-dot');
+  const lbl=document.getElementById('fb-status-lbl');
+  if(dot) dot.style.background = ok ? 'var(--success)' : 'var(--danger)';
+  if(lbl) lbl.textContent = ok ? 'Firebase متصل' : 'Firebase غير متصل';
+}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+async function hashPassword(pass){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pass));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function _usersObjToArr(obj){
+  if(!obj) return [];
+  if(Array.isArray(obj)) return obj;
+  return Object.values(obj);
+}
+
+function getAdminUsers(){
+  if(_fbUsersCache!==null) return _fbUsersCache;
+  try{ return JSON.parse(localStorage.getItem(ADMIN_KEY)||'[]'); }catch(e){ return []; }
+}
+
+function saveAdminUsers(users){
+  _fbUsersCache=users;
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(users));
+  if(fbReady && fbDb && users.length>0){
+    const obj={};
+    users.forEach(u=>{ obj[u.username]=u; });
+    fbDb.ref('admin/users').set(obj).catch(e=>console.error(e));
   }
-}, function(err) {
-  showStatus('تعذّر الاتصال بقاعدة البيانات — تأكد من الاتصال بالإنترنت', 'error');
+}
+
+function getLabDirectory(){
+  try{ return JSON.parse(localStorage.getItem(LAB_DIR_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveLabDirectory(dir){ localStorage.setItem(LAB_DIR_KEY, JSON.stringify(dir)); }
+
+function registerLabInDirectory(username, labName, labAddress, labDir){
+  const dir=getLabDirectory();
+  dir[username]={ username, labName, labAddress, labDir:labDir||'', online:false, ts:Date.now() };
+  saveLabDirectory(dir);
+}
+
+function saveNotif(username, notif){
+  try{
+    const key='medlab_notifs_'+username;
+    const arr=JSON.parse(localStorage.getItem(key)||'[]');
+    arr.unshift({...notif, id:'n_'+Date.now()});
+    if(arr.length>50) arr.length=50;
+    localStorage.setItem(key, JSON.stringify(arr));
+    if(fbReady && fbDb){
+      fbDb.ref('notifications/'+username).push(notif).catch(()=>{});
+    }
+  }catch(e){}
+}
+
+function populateAdminNotifSelect(){
+  const users=getAdminUsers();
+  ['adm-notif-to','wm-to','fb-to'].forEach(id=>{
+    const sel=document.getElementById(id); if(!sel) return;
+    const first=sel.options[0]?sel.options[0].outerHTML:'<option value="all">📢 الجميع</option>';
+    sel.innerHTML=first+users.map(u=>`<option value="${u.username}">👤 ${u.username}</option>`).join('');
+  });
+}
+
+function updateStats(){
+  const users=getAdminUsers();
+  const now=Date.now();
+  document.getElementById('st-total').textContent=users.length;
+  document.getElementById('st-perm').textContent=users.filter(u=>u.type==='permanent').length;
+  document.getElementById('st-temp').textContent=users.filter(u=>u.type==='temp'&&u.expiry>now).length;
+  document.getElementById('st-dis').textContent=users.filter(u=>u.disabled).length;
+}
+
+// ═══════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════
+function showNotif(title, msg, type='info'){
+  const icons={info:'ℹ️',success:'✅',warning:'⚠️',error:'❌'};
+  const w=document.getElementById('notif-wrap');
+  while(w.children.length>=3) w.removeChild(w.firstChild);
+  const el=document.createElement('div'); el.className='notif';
+  el.innerHTML=`<span style="font-size:18px">${icons[type]||'ℹ️'}</span><div><h4>${title}</h4><p>${msg}</p></div>`;
+  w.appendChild(el);
+  setTimeout(()=>{
+    el.style.cssText='opacity:0;transform:translateX(-100%);transition:0.35s';
+    setTimeout(()=>{ if(el.parentNode) el.remove(); },360);
+  },3200);
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+document.querySelectorAll('.moverlay').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.style.display='none'; });
 });
 
-// ===================== SEARCH =====================
-function onSearchInput() {
-  var q = document.getElementById('nameInput').value.trim();
-  if (!q) {
-    document.getElementById('results-list').innerHTML = '';
-    document.getElementById('search-status').innerHTML = '';
+// ═══════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════
+function switchTab(name){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pane-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  // Auto-load data
+  if(name==='monitor'){
+    loadActiveSessions();
+    loadLoginLog();
   }
 }
 
-function searchStudent() {
-  if (!dataLoaded) { showStatus('⏳ جاري تحميل البيانات...', 'loading'); return; }
-  var q = document.getElementById('nameInput').value.trim().toLowerCase();
-  if (!q) { showStatus('أدخل اسمك أولاً', 'error'); return; }
+// ═══════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════
+function toggleTheme(){
+  document.body.classList.toggle('light-mode');
+  const btn=document.getElementById('theme-btn');
+  btn.textContent=document.body.classList.contains('light-mode')?'🌙':'☀️';
+  localStorage.setItem('medlab_theme', document.body.classList.contains('light-mode')?'light':'dark');
+}
+(function(){
+  if(localStorage.getItem('medlab_theme')==='light'){
+    document.body.classList.add('light-mode');
+    const btn=document.getElementById('theme-btn');
+    if(btn) btn.textContent='🌙';
+  }
+})();
 
-  var matches = allStudents.filter(function(st) {
-    return st.name.toLowerCase().includes(q);
+// ═══════════════════════════════════════════════════
+// CREATE USER
+// ═══════════════════════════════════════════════════
+function adminCreateUser(){
+  const uname  =(document.getElementById('adm-uname').value||'').trim().toLowerCase();
+  const pass   =(document.getElementById('adm-pass').value||'').trim();
+  const type   = document.getElementById('adm-type').value;
+  const labname=(document.getElementById('adm-labname').value||'').trim();
+  const labaddr=(document.getElementById('adm-labaddr').value||'').trim();
+  const err=document.getElementById('adm-err');
+
+  if(!uname||!/^[a-z]+$/.test(uname)){ err.textContent='❌ اسم المستخدم: أحرف إنجليزية صغيرة فقط'; err.style.display='block'; return; }
+  if(!pass||!/^[0-9]+$/.test(pass)){   err.textContent='❌ كلمة المرور: أرقام فقط';                err.style.display='block'; return; }
+  if(!labname){                         err.textContent='❌ يرجى إدخال اسم المختبر';               err.style.display='block'; return; }
+  const users=getAdminUsers();
+  if(users.find(u=>u.username===uname)){ err.textContent='❌ اسم المستخدم مستخدم مسبقاً';         err.style.display='block'; return; }
+  err.style.display='none';
+
+  let expiry=null, resolvedType=type;
+  if(type==='week')       { expiry=Date.now()+7*864e5;   resolvedType='temp'; }
+  else if(type==='month') { expiry=Date.now()+30*864e5;  resolvedType='temp'; }
+  else if(type==='year')  { expiry=Date.now()+365*864e5; resolvedType='temp'; }
+
+  hashPassword(pass).then(hashedPass=>{
+    const newUser={username:uname,password:hashedPass,type:resolvedType,durationType:type,expiry,disabled:false,created:new Date().toISOString().split('T')[0],labName:labname,labAddress:labaddr};
+    users.push(newUser);
+    saveAdminUsers(users);
+    registerLabInDirectory(uname,labname,labaddr,'');
+    if(fbReady&&fbDb) fbDb.ref('dir/'+uname).set({username:uname,labName:labname,labAddress:labaddr,labDir:'',online:false,ts:Date.now()});
   });
 
-  document.getElementById('search-status').innerHTML = '';
-  var list = document.getElementById('results-list');
+  document.getElementById('adm-uname').value='';
+  document.getElementById('adm-pass').value='';
+  document.getElementById('adm-labname').value='';
+  document.getElementById('adm-labaddr').value='';
+  renderAdminUsers();
+  const durLabel=type==='week'?'أسبوع':type==='month'?'شهر':type==='year'?'سنة':'دائم';
+  showNotif('✅ تم','تم إنشاء حساب: '+uname+' ('+durLabel+') — يمكن استخدامه من أي جهاز الآن','success');
+}
 
-  if (!matches.length) {
-    list.innerHTML = '';
-    showStatus('لم يتم العثور على اسم مطابق — حاول بجزء آخر من اسمك', 'error');
+function suggestUsername(){
+  const pre=['lab','med','test','clinic','bio','chem','health','scan','diag','care'];
+  const suf=['pro','sys','one','plus','net','hub','x','lab','med','rx'];
+  const users=getAdminUsers();
+  let name;
+  do{ name=pre[Math.floor(Math.random()*pre.length)]+suf[Math.floor(Math.random()*suf.length)]; }
+  while(users.find(u=>u.username===name));
+  document.getElementById('adm-uname').value=name;
+}
+
+function suggestPassword(){
+  document.getElementById('adm-pass').value=Math.floor(100000+Math.random()*900000).toString();
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER USERS
+// ═══════════════════════════════════════════════════
+function renderAdminUsers(){
+  if(fbReady&&fbDb){
+    fbDb.ref('admin/users').once('value').then(snap=>{
+      const raw=snap.val();
+      if(raw){
+        const users=_usersObjToArr(raw);
+        _fbUsersCache=users;
+        localStorage.setItem(ADMIN_KEY,JSON.stringify(users));
+      }
+      _drawAdminUsers();
+    }).catch(()=>_drawAdminUsers());
+  } else {
+    _drawAdminUsers();
+  }
+}
+
+function _drawAdminUsers(){
+  const users=getAdminUsers();
+  const list=document.getElementById('admin-users-list');
+  const countLbl=document.getElementById('users-count-lbl');
+  if(countLbl) countLbl.textContent=users.length;
+  populateAdminNotifSelect();
+  updateStats();
+  if(!list) return;
+  if(!users.length){
+    list.innerHTML='<div class="empty-state"><div>👥</div><div style="font-size:12px">لا يوجد مستخدمون. أنشئ أول مستخدم أعلاه.</div></div>';
     return;
   }
-
-  var html = '';
-  matches.slice(0, 10).forEach(function(st) {
-    var group = allGroups.find(function(g) { return g.id === st.groupId; });
-    var stage = allStages.find(function(s) { return s.id === st.stageId; });
-    html += '<div class="result-item" onclick="selectStudent(' + st.id + ')">' +
-      '<div>' +
-        '<div class="result-name">' + st.name + '</div>' +
-        '<div class="result-meta">' + (stage ? stage.name : '') + ' · ' + (group ? group.name : '') + '</div>' +
-      '</div>' +
-      '<span class="result-arrow">‹</span>' +
-    '</div>';
-  });
-  list.innerHTML = html;
+  const now=Date.now();
+  list.innerHTML=users.map(u=>{
+    const isDisabled=!!u.disabled;
+    const durLabel=u.durationType==='week'?'أسبوع':u.durationType==='month'?'شهر':u.durationType==='year'?'سنة':'';
+    let typeBadge, expText;
+    if(u.type==='permanent'){
+      typeBadge=`<span class="badge-perm">♾️ دائم</span>`;
+      expText='لا ينتهي';
+    } else {
+      const expired=now>u.expiry;
+      const remaining=u.expiry?Math.ceil((u.expiry-now)/(864e5)):0;
+      typeBadge=expired
+        ?`<span class="badge-exp">⛔ منتهي${durLabel?' ('+durLabel+')':''}</span>`
+        :`<span class="badge-temp">⏳ ${durLabel||'مؤقت'}</span>`;
+      expText=expired?'⛔ انتهت الصلاحية':`ينتهي: ${new Date(u.expiry).toLocaleDateString('ar')} (${remaining} يوم متبقي)`;
+    }
+    const disabledBadge=isDisabled?`<span style="background:rgba(255,34,68,.18);color:var(--danger);border:1px solid rgba(255,34,68,.4);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">🚫 معطّل</span>`:'';
+    const permBadge=u.permissions?`<span style="background:rgba(139,63,255,.12);color:var(--secondary);border:1px solid rgba(139,63,255,.3);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">🛡️ صلاحيات مخصصة</span>`:'';
+    return `<div class="user-row" style="${isDisabled?'opacity:.65;border-color:rgba(255,34,68,.35);':''}">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="uname">👤 ${u.username}</span>
+          ${typeBadge}${disabledBadge}${permBadge}
+        </div>
+        ${u.labName?`<div style="font-size:10px;color:var(--primary);margin-top:3px">🏥 ${u.labName}${u.labAddress?' · '+u.labAddress:''}</div>`:''}
+        <div style="font-size:10px;color:var(--text2);margin-top:1px">${expText} | أُنشئ: ${u.created||'-'}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+        <button class="btn btn-sm" style="background:${isDisabled?'rgba(0,245,147,.15)':'rgba(255,170,0,.12)'};color:${isDisabled?'var(--success)':'var(--warning)'};border:1px solid ${isDisabled?'rgba(0,245,147,.4)':'rgba(255,170,0,.35)'};min-width:68px" onclick="adminToggleUser('${u.username}')">${isDisabled?'✅ تفعيل':'🚫 تعطيل'}</button>
+        <button class="btn btn-sm" style="background:rgba(0,245,147,.1);color:var(--success);border:1px solid rgba(0,245,147,.35)" onclick="openExtendSub('${u.username}')">📅 تمديد</button>
+        <button class="btn btn-sm" style="background:rgba(0,212,255,.1);color:var(--primary);border:1px solid rgba(0,212,255,.35)" onclick="openChangePw('${u.username}')">🔑 كلمة مرور</button>
+        <button class="btn btn-sm" style="background:rgba(139,63,255,.12);color:var(--secondary);border:1px solid rgba(139,63,255,.35)" onclick="openPermissions('${u.username}')">🛡️ صلاحيات</button>
+        <button class="btn btn-sm btn-icon" onclick="openAdminEditUser('${u.username}')" title="تعديل">✏️</button>
+        <button class="btn btn-sm btn-d" onclick="adminDeleteUser('${u.username}')" title="حذف">🗑️</button>
+        <button class="btn btn-sm" style="background:rgba(255,214,10,.08);color:var(--warning);border:1px solid rgba(255,214,10,.3)" onclick="adminResetSessions('${u.username}')" title="تفريغ الأجهزة">🔄</button>
+        <button class="btn btn-sm" style="background:rgba(0,212,255,.08);color:var(--primary);border:1px solid rgba(0,212,255,.3)" onclick="openMaxDevices('${u.username}')" title="عدد الأجهزة المسموحة">🔢 ${(typeof u.maxDevices==='number' && u.maxDevices>=1) ? u.maxDevices : 1}</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function selectStudent(studentId) {
-  var st = allStudents.find(function(s) { return s.id === studentId; });
-  if (!st) return;
-  selectedStudent = st;
-  var group = allGroups.find(function(g) { return g.id === st.groupId; });
-  var stage = allStages.find(function(s) { return s.id === st.stageId; });
-
-  document.getElementById('qr-student-name').textContent = st.name;
-  document.getElementById('qr-student-meta').textContent =
-    (stage ? stage.name : '') + ' · ' + (group ? group.name : '');
-
-  // Build QR
-  document.getElementById('qr-wrap').innerHTML = '';
-  new QRCode(document.getElementById('qr-wrap'), {
-    text: 'DENTAL_STU_' + st.id,
-    width: 220,
-    height: 220,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
-
-  // Switch screen
-  document.getElementById('screen-search').style.display = 'none';
-  document.getElementById('screen-qr').style.display = 'block';
-}
-
-function goBack() {
-  document.getElementById('screen-qr').style.display = 'none';
-  document.getElementById('screen-search').style.display = 'block';
-  document.getElementById('results-list').innerHTML = '';
-  document.getElementById('nameInput').value = '';
-  document.getElementById('search-status').innerHTML = '';
-  selectedStudent = null;
-}
-
-// ===================== DOWNLOAD =====================
-function downloadMyQr() {
-  if (!selectedStudent) return;
-  var wrap = document.getElementById('qr-wrap');
-  var canvas = wrap.querySelector('canvas');
-  if (!canvas) {
-    var img = wrap.querySelector('img');
-    if (!img) { alert('حدث خطأ في توليد QR'); return; }
-    var c = document.createElement('canvas');
-    c.width = img.naturalWidth || 220;
-    c.height = img.naturalHeight || 220;
-    c.getContext('2d').drawImage(img, 0, 0);
-    canvas = c;
+// ═══════════════════════════════════════════════════
+// DELETE / TOGGLE USER
+// ═══════════════════════════════════════════════════
+function adminDeleteUser(uname){
+  if(!confirm('حذف المستخدم "'+uname+'" نهائياً؟')) return;
+  const users=getAdminUsers().filter(u=>u.username!==uname);
+  _fbUsersCache=users;
+  localStorage.setItem(ADMIN_KEY,JSON.stringify(users));
+  if(fbReady&&fbDb){
+    fbDb.ref('admin/users/'+uname).remove();
+    fbDb.ref('dir/'+uname).remove();
+    fbDb.ref('sessions/'+uname).remove();
   }
-
-  // Add name label below QR
-  var finalCanvas = document.createElement('canvas');
-  finalCanvas.width = canvas.width;
-  finalCanvas.height = canvas.height + 48;
-  var ctx = finalCanvas.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-  ctx.drawImage(canvas, 0, 0);
-  ctx.fillStyle = '#111111';
-  ctx.font = 'bold 16px Tajawal, Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(selectedStudent.name, finalCanvas.width / 2, canvas.height + 30);
-
-  var link = document.createElement('a');
-  link.download = 'QR_' + selectedStudent.name + '.png';
-  link.href = finalCanvas.toDataURL('image/png');
-  link.click();
+  const dir=getLabDirectory(); delete dir[uname]; saveLabDirectory(dir);
+  renderAdminUsers();
+  showNotif('تم','تم حذف المستخدم '+uname,'success');
 }
 
-// ===================== HELPERS =====================
-function showStatus(msg, type) {
-  var el = document.getElementById('search-status');
-  el.innerHTML = '<div class="status ' + (type||'') + '">' + msg + '</div>';
+function adminToggleUser(uname){
+  const users=getAdminUsers();
+  const u=users.find(x=>x.username===uname); if(!u) return;
+  u.disabled=!u.disabled;
+  saveAdminUsers(users);
+  if(u.disabled&&fbReady&&fbDb) fbDb.ref('sessions/'+uname).remove();
+  renderAdminUsers();
+  showNotif(u.disabled?'تم التعطيل':'تم التفعيل',
+    u.disabled?`تم تعطيل حساب ${uname}`:`تم تفعيل حساب ${uname}`,
+    u.disabled?'warning':'success');
 }
+
+function adminResetSessions(uname){
+  if(!confirm('تفريغ جميع أجهزة "'+uname+'"؟')) return;
+  if(fbReady&&fbDb){
+    fbDb.ref('sessions/'+uname).remove().then(()=>{
+      showNotif('تم','تم تفريغ جلسات '+uname+' ✅','success');
+    });
+  } else {
+    showNotif('خطأ','لا يوجد اتصال بـ Firebase','error');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// MAX DEVICES — تحديد عدد الأجهزة المسموحة لكل مستخدم
+// ═══════════════════════════════════════════════════
+function openMaxDevices(uname){
+  const users=getAdminUsers();
+  const u=users.find(x=>x.username===uname);
+  if(!u){ showNotif('خطأ','المستخدم غير موجود','error'); return; }
+  const cur=(typeof u.maxDevices==='number' && u.maxDevices>=1) ? u.maxDevices : 1;
+  const inp=prompt('عدد الأجهزة المسموحة للحساب "'+uname+'":\n\n• 1 = جهاز واحد فقط (الأكثر صرامة)\n• 2 = جهازان\n• 3 = ثلاثة أجهزة\n• ... وهكذا\n\nالقيمة الحالية: '+cur, String(cur));
+  if(inp===null) return;
+  const n=parseInt(inp,10);
+  if(isNaN(n) || n<1 || n>20){
+    showNotif('خطأ','يرجى إدخال رقم صحيح بين 1 و 20','error');
+    return;
+  }
+  saveMaxDevices(uname, n);
+}
+
+function saveMaxDevices(uname, n){
+  const users=getAdminUsers();
+  const u=users.find(x=>x.username===uname);
+  if(!u) return;
+  u.maxDevices=n;
+  // حفظ محلي + Firebase
+  _fbUsersCache=users;
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(users));
+  if(fbReady && fbDb){
+    fbDb.ref('admin/users/'+uname+'/maxDevices').set(n).then(()=>{
+      // بعد التحديث: إذا قلّ العدد، فرّغ الجلسات الزائدة (احتياطاً)
+      // لكن المستخدم قد يريد ترك الجلسات الحالية. نتركها كما هي.
+      showNotif('تم','✅ تم تحديد عدد الأجهزة لـ '+uname+' = '+n,'success');
+      renderAdminUsers();
+    }).catch(e=>{
+      console.error(e);
+      showNotif('خطأ','فشل الحفظ في Firebase','error');
+    });
+  } else {
+    showNotif('تنبيه','تم الحفظ محلياً (لا يوجد اتصال بـ Firebase)','warning');
+    renderAdminUsers();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SEND NOTIFICATION
+// ═══════════════════════════════════════════════════
+function adminSendNotif(){
+  const title=(document.getElementById('adm-notif-title').value||'').trim();
+  const body=(document.getElementById('adm-notif-body').value||'').trim();
+  const to=document.getElementById('adm-notif-to').value;
+  if(!title||!body){ showNotif('تنبيه','يرجى إدخال العنوان والتفاصيل','warning'); return; }
+  const notif={title,body,date:new Date().toLocaleString('ar'),read:false};
+  function _doSend(users){
+    if(to==='all'){
+      users.forEach(u=>saveNotif(u.username,{...notif}));
+      showNotif('تم','✅ تم إرسال الإشعار لجميع المستخدمين ('+users.length+')','success');
+    } else {
+      saveNotif(to,{...notif});
+      showNotif('تم','✅ تم إرسال الإشعار للمستخدم: '+to,'success');
+    }
+    document.getElementById('adm-notif-title').value='';
+    document.getElementById('adm-notif-body').value='';
+  }
+  if(fbReady&&fbDb){
+    fbDb.ref('admin/users').once('value').then(snap=>{
+      const raw=snap.val();
+      const users=raw?_usersObjToArr(raw):getAdminUsers();
+      if(users.length>0){ _fbUsersCache=users; localStorage.setItem(ADMIN_KEY,JSON.stringify(users)); }
+      _doSend(users.length>0?users:getAdminUsers());
+    }).catch(()=>_doSend(getAdminUsers()));
+  } else {
+    _doSend(getAdminUsers());
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// EXTEND SUB
+// ═══════════════════════════════════════════════════
+function openExtendSub(uname){
+  _extendTargetUser=uname;
+  const users=getAdminUsers();
+  const u=users.find(x=>x.username===uname); if(!u) return;
+  document.getElementById('extend-uname-lbl').textContent=uname;
+  const now=Date.now();
+  let info='';
+  if(u.type==='permanent'){
+    info=`<div style="color:var(--success);font-weight:700">♾️ هذا الحساب دائمي بالفعل — لا يحتاج تمديد</div>`;
+  } else if(u.expiry){
+    const expired=now>u.expiry;
+    const remaining=Math.ceil((u.expiry-now)/864e5);
+    info=`<div style="color:${expired?'var(--danger)':'var(--primary)'};font-weight:700">${expired?'⛔ منتهي الصلاحية':'⏳ ينتهي بعد '+remaining+' يوم'}</div>
+    <div style="color:var(--text2);margin-top:4px">📅 تاريخ الانتهاء الحالي: ${new Date(u.expiry).toLocaleDateString('ar')}</div>`;
+  }
+  document.getElementById('extend-current-info').innerHTML=info;
+  openModal('m-extend-sub');
+}
+
+function doExtendSub(period){
+  const users=getAdminUsers();
+  const u=users.find(x=>x.username===_extendTargetUser); if(!u) return;
+  const now=Date.now();
+  if(period==='permanent'){
+    u.type='permanent'; u.durationType='permanent'; u.expiry=null;
+  } else {
+    const base=(u.expiry&&u.expiry>now)?u.expiry:now;
+    const add=period==='week'?7*864e5:period==='month'?30*864e5:365*864e5;
+    u.expiry=base+add; u.type='temp'; u.durationType=period;
+  }
+  saveAdminUsers(users);
+  if(fbReady&&fbDb) fbDb.ref('admin/users/'+_extendTargetUser).update({type:u.type,durationType:u.durationType,expiry:u.expiry||null});
+  closeModal('m-extend-sub');
+  renderAdminUsers();
+  const lbl=period==='week'?'أسبوع':period==='month'?'شهر':period==='year'?'سنة':'دائمي';
+  showNotif('✅ تم التمديد','تم تمديد اشتراك '+_extendTargetUser+' بمقدار '+lbl,'success');
+  _extendTargetUser=null;
+}
+
+// ═══════════════════════════════════════════════════
+// CHANGE PASSWORD
+// ═══════════════════════════════════════════════════
+function openChangePw(uname){
+  _chpwTargetUser=uname;
+  document.getElementById('chpw-uname-lbl').textContent=uname;
+  document.getElementById('chpw-new').value='';
+  document.getElementById('chpw-confirm').value='';
+  document.getElementById('chpw-err').style.display='none';
+  document.getElementById('chpw-strength-bar').style.width='0%';
+  document.getElementById('chpw-strength-lbl').textContent='';
+  openModal('m-change-pw');
+  setTimeout(()=>document.getElementById('chpw-new').focus(),120);
+}
+
+function chpwStrength(val){
+  const bar=document.getElementById('chpw-strength-bar');
+  const lbl=document.getElementById('chpw-strength-lbl');
+  if(!val){ bar.style.width='0%'; lbl.textContent=''; return; }
+  let score=0;
+  if(val.length>=4) score++;
+  if(val.length>=6) score++;
+  if(val.length>=8) score++;
+  if(/[a-zA-Z]/.test(val)) score++;
+  const colors=['#ff2244','#ff8800','#ffcc00','#00e87a','#00d4ff'];
+  const labels=['ضعيف جداً','ضعيف','متوسط','جيد','قوي جداً'];
+  bar.style.width=(score/4*100)+'%';
+  bar.style.background=colors[score]; lbl.style.color=colors[score];
+  lbl.textContent=labels[score]||'';
+}
+
+async function saveChangePw(){
+  const newPw=(document.getElementById('chpw-new').value||'').trim();
+  const conf=(document.getElementById('chpw-confirm').value||'').trim();
+  const errEl=document.getElementById('chpw-err');
+  errEl.style.display='none';
+  if(!newPw){ errEl.textContent='❌ يرجى إدخال كلمة المرور الجديدة'; errEl.style.display='block'; return; }
+  if(!/^[0-9]+$/.test(newPw)){ errEl.textContent='❌ كلمة المرور يجب أن تكون أرقاماً فقط'; errEl.style.display='block'; return; }
+  if(newPw.length<4){ errEl.textContent='❌ كلمة المرور قصيرة جداً (4 أرقام على الأقل)'; errEl.style.display='block'; return; }
+  if(newPw!==conf){ errEl.textContent='❌ كلمات المرور غير متطابقة'; errEl.style.display='block'; return; }
+  const users=getAdminUsers();
+  const idx=users.findIndex(u=>u.username===_chpwTargetUser);
+  if(idx===-1){ errEl.textContent='❌ المستخدم غير موجود'; errEl.style.display='block'; return; }
+  const hashedPw=await hashPassword(newPw);
+  users[idx].password=hashedPw;
+  saveAdminUsers(users);
+  if(fbReady&&fbDb){
+    fbDb.ref('sessions/'+_chpwTargetUser).remove();
+    fbDb.ref('admin/users/'+_chpwTargetUser+'/password').set(hashedPw);
+  }
+  localStorage.removeItem('medlab_device_token_'+_chpwTargetUser);
+  closeModal('m-change-pw');
+  renderAdminUsers();
+  showNotif('✅ تم','تم تغيير كلمة مرور '+_chpwTargetUser+' وتسجيل الخروج من جميع الأجهزة','success');
+  _chpwTargetUser=null;
+}
+
+// ═══════════════════════════════════════════════════
+// PERMISSIONS
+// ═══════════════════════════════════════════════════
+const PERMISSIONS_DEF=[
+  {key:'patients',   icon:'👥',label:'إدارة المرضى',      desc:'إضافة، تعديل، حذف المرضى'},
+  {key:'requests',   icon:'📋',label:'طلبات التحاليل',    desc:'إضافة وإدارة طلبات الفحص وطابور الانتظار'},
+  {key:'results',    icon:'🧪',label:'إدخال النتائج',     desc:'إدخال وتعديل نتائج التحاليل و Semen'},
+  {key:'culture',    icon:'🦠',label:'الزرع والحساسية',   desc:'إدخال نتائج الزرع'},
+  {key:'print',      icon:'🖨️',label:'الطباعة',           desc:'طباعة النتائج والتقارير'},
+  {key:'billing',    icon:'💰',label:'الفواتير والحسابات',desc:'إنشاء وعرض الفواتير والحسابات'},
+  {key:'doctors',    icon:'👨‍⚕️',label:'إدارة الأطباء',    desc:'إضافة وتعديل الأطباء المحولين'},
+  {key:'inventory',  icon:'📦',label:'المخزون',           desc:'إدارة المواد والمستلزمات'},
+  {key:'reports',    icon:'📊',label:'التقارير والإحصاء', desc:'عرض التقارير وضبط الجودة'},
+  {key:'settings',   icon:'⚙️',label:'الإعدادات والإعداد',desc:'الإعدادات، قاعدة التحاليل، الباقات، LIS'},
+  {key:'database',   icon:'💾',label:'قاعدة البيانات',    desc:'تصدير واستيراد البيانات'},
+  {key:'chat',       icon:'💬',label:'المحادثات',         desc:'التواصل مع المختبرات الأخرى'},
+];
+const ROLES={
+  results_only:{results:true},
+  receptionist:{patients:true,requests:true,billing:true,print:true,doctors:true},
+  lab_tech:{patients:true,requests:true,results:true,culture:true,print:true},
+  print_only:{print:true},
+  full_admin:Object.fromEntries(PERMISSIONS_DEF.map(p=>[p.key,true])),
+};
+
+function openPermissions(uname){
+  _permTargetUser=uname;
+  document.getElementById('perm-uname-lbl').textContent=uname;
+  const users=getAdminUsers();
+  const u=users.find(x=>x.username===uname);
+  const perms=(u&&u.permissions&&Object.keys(u.permissions).length>0)
+    ? u.permissions
+    : Object.fromEntries(PERMISSIONS_DEF.map(p=>[p.key,true]));
+  _renderPermList(perms);
+  openModal('m-permissions');
+}
+
+function _renderPermList(perms){
+  const list=document.getElementById('perm-list');
+  list.innerHTML=PERMISSIONS_DEF.map(p=>{
+    const isOn=perms[p.key]===true;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:10px 14px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">${p.icon}</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--text)">${p.label}</div>
+          <div style="font-size:10px;color:var(--text2)">${p.desc}</div>
+        </div>
+      </div>
+      <div class="perm-tog ${isOn?'on':''}" id="permtog-${p.key}" onclick="this.classList.toggle('on')">
+        <div class="perm-tog-t"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function applyRole(role){
+  const perms=ROLES[role]||{};
+  _renderPermList(perms);
+}
+
+function savePermissions(){
+  const users=getAdminUsers();
+  const idx=users.findIndex(u=>u.username===_permTargetUser);
+  if(idx===-1){ showNotif('خطأ','المستخدم غير موجود','error'); return; }
+  const perms={};
+  PERMISSIONS_DEF.forEach(p=>{
+    const tog=document.getElementById('permtog-'+p.key);
+    perms[p.key]=tog?tog.classList.contains('on'):false;
+  });
+  users[idx].permissions=perms;
+  saveAdminUsers(users);
+  if(fbReady&&fbDb) fbDb.ref('admin/users/'+_permTargetUser+'/permissions').set(perms);
+  closeModal('m-permissions');
+  renderAdminUsers();
+  showNotif('✅ تم','تم حفظ الصلاحيات بنجاح','success');
+}
+
+// ═══════════════════════════════════════════════════
+// EDIT USER
+// ═══════════════════════════════════════════════════
+function openAdminEditUser(uname){
+  _editTargetUser=uname;
+  document.getElementById('edit-uname-lbl').textContent=uname;
+  document.getElementById('edit-uname-new').value='';
+  document.getElementById('edit-uname-new').placeholder=uname;
+  document.getElementById('edit-pass-new').value='';
+  document.getElementById('edit-user-err').style.display='none';
+  document.getElementById('edit-save-btn').onclick=()=>saveAdminEditUser(uname);
+  openModal('m-admin-edit-user');
+}
+
+async function saveAdminEditUser(oldUname){
+  const newUname=(document.getElementById('edit-uname-new').value||'').trim().toLowerCase();
+  const newPass=(document.getElementById('edit-pass-new').value||'').trim();
+  const errEl=document.getElementById('edit-user-err');
+  errEl.style.display='none';
+  if(newUname&&!/^[a-z]+$/.test(newUname)){  errEl.textContent='❌ اسم المستخدم: أحرف إنجليزية صغيرة فقط'; errEl.style.display='block'; return; }
+  if(newPass&&!/^[0-9]+$/.test(newPass)){    errEl.textContent='❌ كلمة المرور: أرقام فقط'; errEl.style.display='block'; return; }
+  if(!newUname&&!newPass){                   errEl.textContent='❌ يرجى إدخال اسم مستخدم جديد أو كلمة مرور جديدة'; errEl.style.display='block'; return; }
+  const users=getAdminUsers();
+  const idx=users.findIndex(u=>u.username===oldUname);
+  if(idx===-1){ errEl.textContent='❌ المستخدم غير موجود'; errEl.style.display='block'; return; }
+  if(newUname&&newUname!==oldUname&&users.find(u=>u.username===newUname)){
+    errEl.textContent='❌ اسم المستخدم هذا مستخدم مسبقاً'; errEl.style.display='block'; return;
+  }
+  const u={...users[idx]};
+  const finalUname=newUname||oldUname;
+  if(newPass) u.password=await hashPassword(newPass);
+  if(newUname&&newUname!==oldUname){
+    u.username=newUname;
+    if(fbReady&&fbDb){
+      fbDb.ref('dir/'+newUname).set({username:newUname,labName:u.labName||'',labAddress:u.labAddress||'',online:false,ts:Date.now()});
+      fbDb.ref('dir/'+oldUname).remove();
+    }
+  }
+  if(fbReady&&fbDb){
+    fbDb.ref('sessions/'+oldUname).remove();
+    if(newUname&&newUname!==oldUname){
+      fbDb.ref('sessions/'+newUname).remove();
+      fbDb.ref('admin/users/'+oldUname).remove();
+    }
+  }
+  localStorage.removeItem('medlab_device_token_'+oldUname);
+  if(newUname&&newUname!==oldUname){
+    users.splice(idx,1); users.push(u);
+  } else {
+    users[idx]=u;
+  }
+  saveAdminUsers(users);
+  closeModal('m-admin-edit-user');
+  renderAdminUsers();
+  const msg=newUname&&newUname!==oldUname
+    ?'تم تغيير اسم المستخدم من '+oldUname+' إلى '+newUname+' ✅'
+    :'تم تعديل كلمة المرور وتسجيل الخروج من جميع الأجهزة 🔒';
+  showNotif('✅ تم',msg,'success');
+}
+
+// ═══════════════════════════════════════════════════
+// ACTIVE SESSIONS
+// ═══════════════════════════════════════════════════
+function loadActiveSessions(){
+  const body=document.getElementById('active-sessions-body');
+  body.innerHTML='<div style="text-align:center;padding:30px;color:var(--text2)">⏳ جاري التحميل...</div>';
+  if(!fbReady||!fbDb){
+    body.innerHTML='<div style="text-align:center;padding:30px;color:var(--danger)">❌ يتطلب اتصال Firebase</div>';
+    return;
+  }
+  fbDb.ref('sessions').once('value').then(snap=>{
+    const raw=snap.val();
+    if(!raw||!Object.keys(raw).length){
+      body.innerHTML='<div class="empty-state"><div>✅</div><div style="font-size:12px">لا توجد جلسات نشطة حالياً</div></div>';
+      return;
+    }
+    let html=''; let count=0;
+    Object.entries(raw).forEach(([uname,devices])=>{
+      if(!devices) return;
+      Object.entries(devices).forEach(([devId,sess])=>{
+        if(!sess) return; count++;
+        const loginTime=sess.loginTime?new Date(sess.loginTime).toLocaleString('ar'):'-';
+        const device=sess.deviceInfo||sess.userAgent||devId.slice(0,20)+'...';
+        const since=sess.loginTime?_timeSince(sess.loginTime):'-';
+        html+=`<div class="session-card">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--secondary));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#000;flex-shrink:0">${uname.charAt(0).toUpperCase()}</div>
+            <div>
+              <div style="font-size:13px;font-weight:800;color:var(--text)">👤 ${uname}</div>
+              <div style="font-size:10px;color:var(--primary);margin-top:1px">🖥️ ${device.slice(0,55)}</div>
+              <div style="font-size:10px;color:var(--text2);margin-top:1px">🕐 دخل ${since} — ${loginTime}</div>
+            </div>
+          </div>
+          <button class="session-kick-btn" onclick="kickSession('${uname}','${devId}')">🚫 طرد</button>
+        </div>`;
+      });
+    });
+    if(!count){
+      body.innerHTML='<div class="empty-state"><div>✅</div><div style="font-size:12px">لا توجد جلسات نشطة</div></div>';
+      return;
+    }
+    body.innerHTML=`<div style="font-size:12px;color:var(--text2);margin-bottom:10px">🟢 ${count} جلسة نشطة</div>${html}`;
+  }).catch(e=>{
+    body.innerHTML=`<div style="text-align:center;padding:20px;color:var(--danger)">❌ خطأ: ${e.message}</div>`;
+  });
+}
+
+function kickSession(uname,devId){
+  if(!confirm('طرد جلسة المستخدم "'+uname+'"؟')) return;
+  if(!fbReady||!fbDb){ showNotif('خطأ','لا يوجد اتصال Firebase','error'); return; }
+  fbDb.ref('sessions/'+uname+'/'+devId).remove().then(()=>{
+    showNotif('تم','تم طرد جلسة '+uname+' ✅','success');
+    loadActiveSessions();
+  });
+}
+
+function kickAllSessions(){
+  if(!confirm('طرد جميع الجلسات النشطة؟')) return;
+  if(!fbReady||!fbDb){ showNotif('خطأ','لا يوجد اتصال Firebase','error'); return; }
+  fbDb.ref('sessions').remove().then(()=>{
+    showNotif('تم','تم طرد جميع الجلسات ✅','success');
+    loadActiveSessions();
+  });
+}
+
+function _timeSince(ts){
+  const diff=Date.now()-ts;
+  if(diff<60000) return 'الآن';
+  if(diff<3600000) return `منذ ${Math.floor(diff/60000)} دقيقة`;
+  if(diff<86400000) return `منذ ${Math.floor(diff/3600000)} ساعة`;
+  return `منذ ${Math.floor(diff/86400000)} يوم`;
+}
+
+// ═══════════════════════════════════════════════════
+// LOGIN LOG
+// ═══════════════════════════════════════════════════
+function loadLoginLog(){
+  const users=getAdminUsers();
+  const sel=document.getElementById('loginlog-user-filter');
+  if(sel){
+    sel.innerHTML='<option value="">كل المستخدمين</option>'+
+      users.map(u=>`<option value="${u.username}">👤 ${u.username}</option>`).join('');
+  }
+  if(fbReady&&fbDb){
+    fbDb.ref('loginLog').orderByChild('ts').limitToLast(200).once('value').then(snap=>{
+      const raw=snap.val();
+      const log=raw?Object.values(raw).sort((a,b)=>b.ts-a.ts):[];
+      _renderLoginLog(log);
+    }).catch(()=>_renderLoginLogLocal());
+  } else {
+    _renderLoginLogLocal();
+  }
+}
+
+function _renderLoginLogLocal(){
+  const log=JSON.parse(localStorage.getItem(LOGIN_LOG_KEY)||'[]').reverse();
+  _renderLoginLog(log);
+}
+
+function _renderLoginLog(log){
+  const filter=(document.getElementById('loginlog-user-filter')||{}).value||'';
+  const filtered=filter?log.filter(l=>l.uname===filter):log;
+  const body=document.getElementById('login-log-body');
+  const stats=document.getElementById('login-log-stats');
+  const thisMonth=new Date().toISOString().slice(0,7);
+  const monthCount={};
+  filtered.filter(l=>l.ts&&new Date(l.ts).toISOString().slice(0,7)===thisMonth)
+    .forEach(l=>{ monthCount[l.uname]=(monthCount[l.uname]||0)+1; });
+  const totalThisMonth=Object.values(monthCount).reduce((s,v)=>s+v,0);
+  const lastLogin=filtered.find(l=>l.action==='login');
+  if(stats) stats.innerHTML=`
+    <div style="background:rgba(0,212,255,.07);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center">
+      <div style="font-size:18px;font-weight:900;color:var(--primary)">${filtered.length}</div>
+      <div style="font-size:10px;color:var(--text2)">إجمالي السجلات</div>
+    </div>
+    <div style="background:rgba(0,245,147,.07);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center">
+      <div style="font-size:18px;font-weight:900;color:var(--success)">${totalThisMonth}</div>
+      <div style="font-size:10px;color:var(--text2)">دخول هذا الشهر</div>
+    </div>
+    <div style="background:rgba(139,63,255,.07);border:1px solid var(--border);border-radius:9px;padding:10px;text-align:center;overflow:hidden">
+      <div style="font-size:11px;font-weight:700;color:var(--secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${lastLogin?lastLogin.uname:'-'}</div>
+      <div style="font-size:10px;color:var(--text2)">آخر دخول</div>
+    </div>`;
+  if(!filtered.length){
+    body.innerHTML='<div class="empty-state"><div>📊</div><div style="font-size:12px">لا توجد سجلات</div></div>';
+    return;
+  }
+  body.innerHTML=filtered.slice(0,100).map(l=>`
+    <div class="login-log-row">
+      <div style="width:8px;height:8px;border-radius:50%;background:${l.action==='login'?'var(--success)':'var(--danger)'};flex-shrink:0"></div>
+      <div style="flex:0 0 90px;font-weight:700;color:var(--text)">${l.uname||'-'}</div>
+      <div style="flex:0 0 65px;color:${l.action==='login'?'var(--success)':'var(--danger)'}">${l.action==='login'?'🔓 دخل':'🔒 خرج'}</div>
+      <div style="flex:1;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(l.device||'-').slice(0,50)}</div>
+      <div style="flex:0 0 120px;color:var(--text2);text-align:left;font-size:10px">${l.ts?new Date(l.ts).toLocaleString('ar'):'-'}</div>
+    </div>`).join('');
+}
+
+function renderLoginLog(){ loadLoginLog(); }
+
+function clearLoginLog(){
+  if(!confirm('حذف جميع سجلات الدخول؟')) return;
+  localStorage.removeItem(LOGIN_LOG_KEY);
+  if(fbReady&&fbDb) fbDb.ref('loginLog').remove();
+  showNotif('تم','تم مسح سجل الدخول ✅','success');
+  loadLoginLog();
+}
+
+// ═══════════════════════════════════════════════════
+// WELCOME MESSAGE
+// ═══════════════════════════════════════════════════
+function _updateWmPreview(){
+  const icon=(document.getElementById('wm-icon')||{}).value||'📢';
+  const title=(document.getElementById('wm-title')||{}).value||'عنوان الرسالة';
+  const body=(document.getElementById('wm-body')||{}).value||'نص الرسالة...';
+  const p1=document.getElementById('wm-prev-icon');
+  const p2=document.getElementById('wm-prev-title');
+  const p3=document.getElementById('wm-prev-body');
+  if(p1) p1.textContent=icon;
+  if(p2) p2.textContent=title;
+  if(p3) p3.textContent=body;
+}
+
+function sendWelcomeMsg(){
+  const to=(document.getElementById('wm-to')||{}).value||'all';
+  const title=((document.getElementById('wm-title')||{}).value||'').trim();
+  const body=((document.getElementById('wm-body')||{}).value||'').trim();
+  const icon=(document.getElementById('wm-icon')||{}).value||'📢';
+  const type=(document.getElementById('wm-type')||{}).value||'info';
+  if(!title||!body){ showNotif('تنبيه','يرجى إدخال العنوان والنص','warning'); return; }
+  const msg={id:'wm_'+Date.now(),icon,title,body,type,ts:Date.now(),sent_by:'admin'};
+  function _doSendWm(users){
+    const targets=to==='all'?users.map(u=>u.username):[to];
+    if(fbReady&&fbDb){
+      targets.forEach(uname=>{ fbDb.ref('welcomeMsg/'+uname).set(msg); });
+      showNotif('✅ تم','تم إرسال الرسالة إلى '+targets.length+' مستخدم','success');
+    } else {
+      targets.forEach(uname=>{ localStorage.setItem('wm_'+uname, JSON.stringify(msg)); });
+      showNotif('✅ تم','تم حفظ الرسالة (ستظهر عند الاتصال)','success');
+    }
+    document.getElementById('wm-title').value='';
+    document.getElementById('wm-body').value='';
+    _updateWmPreview();
+  }
+  if(fbReady&&fbDb){
+    fbDb.ref('admin/users').once('value').then(snap=>{
+      const raw=snap.val();
+      const users=raw?_usersObjToArr(raw):getAdminUsers();
+      if(users.length>0){ _fbUsersCache=users; localStorage.setItem(ADMIN_KEY,JSON.stringify(users)); }
+      _doSendWm(users.length>0?users:getAdminUsers());
+    }).catch(()=>_doSendWm(getAdminUsers()));
+  } else {
+    _doSendWm(getAdminUsers());
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// FORCED BACKUP
+// ═══════════════════════════════════════════════════
+function triggerForcedBackup(){
+  const to=(document.getElementById('fb-to')||{}).value||'all';
+  const message=((document.getElementById('fb-message')||{}).value||'').trim()||'🔒 يرجى تنزيل نسخة احتياطية من بياناتك.';
+  const payload={id:'fb_'+Date.now(),message,ts:Date.now(),triggered_by:'admin'};
+  function _doForcedBackup(users){
+    const targets=to==='all'?users.map(u=>u.username):[to];
+    if(fbReady&&fbDb){
+      targets.forEach(uname=>{ fbDb.ref('forcedBackup/'+uname).set(payload); });
+    } else {
+      targets.forEach(uname=>{ localStorage.setItem('medlab_forced_backup_'+uname, JSON.stringify(payload)); });
+    }
+    showNotif('✅ تم','تم إرسال طلب النسخة الاحتياطي إلى '+targets.length+' مستخدم','success');
+  }
+  if(fbReady&&fbDb){
+    fbDb.ref('admin/users').once('value').then(snap=>{
+      const raw=snap.val();
+      const users=raw?_usersObjToArr(raw):getAdminUsers();
+      if(users.length>0){ _fbUsersCache=users; localStorage.setItem(ADMIN_KEY,JSON.stringify(users)); }
+      _doForcedBackup(users.length>0?users:getAdminUsers());
+    }).catch(()=>_doForcedBackup(getAdminUsers()));
+  } else {
+    _doForcedBackup(getAdminUsers());
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// FIREBASE DIAGNOSTIC
+// ═══════════════════════════════════════════════════
+function diagFirebase(){
+  const el=document.getElementById('diag-result');
+  el.style.display='block';
+  el.textContent='⏳ جاري الفحص...\n';
+  loadFirebase().then(ok=>{
+    if(!ok){ el.textContent+='❌ تعذر تحميل Firebase SDK\n'; return; }
+    el.textContent+='✅ Firebase متصل\n\n';
+    fbDb.ref('admin/users').once('value').then(snap=>{
+      const raw=snap.val();
+      el.textContent+='📋 المستخدمون في Firebase:\n';
+      if(!raw){
+        el.textContent+='   ⚠️ فارغ — لا يوجد مستخدمون في Firebase\n';
+        el.textContent+='   👉 اضغط "رفع البيانات المحلية" لنقلهم\n';
+      } else {
+        const users=_usersObjToArr(raw);
+        users.forEach(u=>{ el.textContent+=`   ✅ ${u.username} | 🏥 ${u.labName||'-'}\n`; });
+      }
+      el.textContent+='\n📋 المحلي (هذا الجهاز):\n';
+      const local=JSON.parse(localStorage.getItem(ADMIN_KEY)||'[]');
+      if(!local.length) el.textContent+='   لا يوجد بيانات محلية\n';
+      local.forEach(u=>{ el.textContent+=`   👤 ${u.username} | 🏥 ${u.labName||'-'}\n`; });
+    }).catch(e=>{ el.textContent+='❌ خطأ: '+e.message+'\n'; });
+  });
+}
+
+function cleanAllPasswords(){
+  if(!fbReady||!fbDb){ showNotif('خطأ','لا يوجد اتصال بـ Firebase','error'); return; }
+  fbDb.ref('admin/users').once('value').then(snap=>{
+    const raw=snap.val();
+    if(!raw){ showNotif('تنبيه','لا يوجد مستخدمون في DB','warning'); return; }
+    const updates={};
+    let count=0;
+    Object.keys(raw).forEach(uname=>{
+      if(raw[uname]&&raw[uname].password!==undefined){
+        updates['admin/users/'+uname+'/password']=null; count++;
+      }
+    });
+    if(count===0){ showNotif('✅ نظيف','لا توجد كلمات مرور في DB أصلاً','success'); return; }
+    fbDb.ref().update(updates).then(()=>{
+      showNotif('✅ تم','تم مسح كلمات المرور لـ '+count+' مستخدم من DB','success');
+    }).catch(e=>showNotif('خطأ','فشل: '+e.message,'error'));
+  });
+}
+
+function forceSyncToFirebase(){
+  const el=document.getElementById('diag-result');
+  el.style.display='block';
+  const local=JSON.parse(localStorage.getItem(ADMIN_KEY)||'[]');
+  if(!local.length){ el.textContent='⚠️ لا يوجد مستخدمون محليون للرفع'; return; }
+  el.textContent='⏳ جاري الرفع...\n';
+  loadFirebase().then(ok=>{
+    if(!ok){ el.textContent+='❌ تعذر الاتصال بـ Firebase'; return; }
+    const obj={};
+    local.forEach(u=>{ obj[u.username]=u; });
+    fbDb.ref('admin/users').set(obj).then(()=>{
+      _fbUsersCache=local;
+      el.textContent='✅ تم رفع '+local.length+' مستخدم إلى Firebase!\n';
+      local.forEach(u=>{ el.textContent+=`   👤 ${u.username} — 🏥 ${u.labName||'-'}\n`; });
+      renderAdminUsers();
+    }).catch(e=>{ el.textContent='❌ فشل الرفع: '+e.message; });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+(async function init(){
+  // تحميل Firebase
+  const ok = await loadFirebase();
+  if(ok){
+    // مزامنة المستخدمين من Firebase
+    try{
+      const snap = await fbDb.ref('admin/users').once('value');
+      const raw  = snap.val();
+      if(raw){
+        const users = _usersObjToArr(raw);
+        if(users.length>0){
+          _fbUsersCache = users;
+          localStorage.setItem(ADMIN_KEY, JSON.stringify(users));
+        }
+      }
+    }catch(e){}
+  }
+  // عرض المستخدمين والإحصاءات
+  _drawAdminUsers();
+  // تعبئة قوائم المنتدين
+  populateAdminNotifSelect();
+})();
 </script>
 </body>
 </html>

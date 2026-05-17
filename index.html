@@ -1022,6 +1022,7 @@ function _drawAdminUsers(){
         <button class="btn btn-sm btn-d" onclick="adminDeleteUser('${u.username}')" title="حذف">🗑️</button>
         <button class="btn btn-sm" style="background:rgba(255,214,10,.08);color:var(--warning);border:1px solid rgba(255,214,10,.3)" onclick="adminResetSessions('${u.username}')" title="تفريغ الأجهزة">🔄</button>
         <button class="btn btn-sm" style="background:rgba(0,212,255,.08);color:var(--primary);border:1px solid rgba(0,212,255,.3)" onclick="openMaxDevices('${u.username}')" title="عدد الأجهزة المسموحة">🔢 ${(typeof u.maxDevices==='number' && u.maxDevices>=1) ? u.maxDevices : 1}</button>
+        <button class="btn btn-sm" id="sync-btn-${u.username}" style="${u.firebaseSync?'background:rgba(0,232,122,.12);color:#00e87a;border:1px solid rgba(0,232,122,.4)":'background:rgba(255,255,255,.05);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.15)'}" onclick="adminToggleSync('${u.username}')" title="${u.firebaseSync?'إيقاف المزامنة السحابية':'تفعيل المزامنة السحابية'}">${u.firebaseSync?'☁️ مزامنة':'💾 محلي'}</button>
       </div>
     </div>`;
   }).join('');
@@ -1066,6 +1067,50 @@ function adminResetSessions(uname){
   } else {
     showNotif('خطأ','لا يوجد اتصال بـ Firebase','error');
   }
+}
+
+// ═══════════════════════════════════════════════════
+// FIREBASE SYNC TOGGLE — تفعيل/تعطيل المزامنة السحابية
+// ═══════════════════════════════════════════════════
+function adminToggleSync(uname){
+  const users = getAdminUsers();
+  const u = users.find(x => x.username === uname);
+  if(!u) return;
+
+  const newState = !u.firebaseSync;
+  u.firebaseSync = newState;
+  saveAdminUsers(users);
+
+  // تحديث Firebase بحالة المزامنة
+  if(fbReady && fbDb){
+    fbDb.ref('sync_config/' + uname + '/enabled').set(newState).catch(()=>{});
+  }
+
+  // تحديث زر المزامنة في الواجهة فوراً
+  const btn = document.getElementById('sync-btn-' + uname);
+  if(btn){
+    if(newState){
+      btn.style.background = 'rgba(0,232,122,.12)';
+      btn.style.color = '#00e87a';
+      btn.style.borderColor = 'rgba(0,232,122,.4)';
+      btn.textContent = '☁️ مزامنة';
+      btn.title = 'إيقاف المزامنة السحابية';
+    } else {
+      btn.style.background = 'rgba(255,255,255,.05)';
+      btn.style.color = 'rgba(255,255,255,.45)';
+      btn.style.borderColor = 'rgba(255,255,255,.15)';
+      btn.textContent = '💾 محلي';
+      btn.title = 'تفعيل المزامنة السحابية';
+    }
+  }
+
+  showNotif(
+    newState ? '☁️ مزامنة مفعّلة' : '💾 وضع محلي',
+    newState
+      ? 'سيتم مزامنة بيانات ' + uname + ' عبر Firebase'
+      : 'بيانات ' + uname + ' ستبقى محلية فقط',
+    newState ? 'success' : 'warning'
+  );
 }
 
 // ═══════════════════════════════════════════════════

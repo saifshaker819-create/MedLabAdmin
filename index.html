@@ -1928,5 +1928,162 @@ function slClearSub(uname){
   slLoad();
 })();
 </script>
+
+<!-- ══════ MedLabChat — قسم مختبرات السايد لاب ══════ -->
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   لوحة الأدمن — إضافة داخل تبويب «سايد لاب»
+   قائمة مختبرات MedLabChat المسجّلة: عرض · إيقاف · حذف
+   لا تمسّ أي كود موجود — تُحقن بطاقة جديدة داخل نفس التبويب.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+
+function _db(){ try{ return fbDb||null; }catch(e){ return null; } }
+function _notif(t,m,k){ try{ showNotif(t,m,k||'info'); }catch(e){} }
+function _esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+var _sl={}, _links={}, _bound=false;
+
+function injectCard(){
+  var pane=document.getElementById('pane-sidelab');
+  if(!pane || document.getElementById('mlc-labs-card')) return;
+  var card=document.createElement('div');
+  card.className='card';
+  card.id='mlc-labs-card';
+  card.style.borderColor='rgba(0,212,255,.32)';
+  card.innerHTML=
+    '<div class="card-hdr">'+
+      '<div class="card-title">💬 مختبرات MedLabChat المسجّلة</div>'+
+      '<button class="btn btn-sm" style="background:rgba(0,212,255,.1);color:var(--primary);border:1px solid rgba(0,212,255,.35)" onclick="mlcLabsLoad(true)">🔄 تحديث</button>'+
+    '</div>'+
+    '<div style="background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.2);border-radius:10px;padding:11px 13px;font-size:11.5px;color:var(--text2);line-height:1.9;margin-bottom:14px">'+
+      '• هذه مختبرات <b>السايد لاب</b> التي أنشأت حساباً في برنامج MedLabChat.<br>'+
+      '• الرقم بجانب كل مختبر = عدد مختبرات ميدلاب برو التي أضافها.<br>'+
+      '• <b>إيقاف</b> يمنع صاحب الحساب من الدخول ومن مراسلة أي مختبر.<br>'+
+      '• <b>حذف</b> يزيل الحساب وكل روابطه — يستطيع بعدها تسجيل نفس اليوزر من جديد.'+
+    '</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'+
+      '<div style="flex:1;min-width:110px;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:10px 12px">'+
+        '<div style="font-size:19px;font-weight:900;color:var(--primary)" id="mlc-count-all">0</div>'+
+        '<div style="font-size:10px;color:var(--text2)">💬 حساب مسجّل</div></div>'+
+      '<div style="flex:1;min-width:110px;background:rgba(0,245,147,.07);border:1px solid rgba(0,245,147,.25);border-radius:10px;padding:10px 12px">'+
+        '<div style="font-size:19px;font-weight:900;color:var(--success)" id="mlc-count-on">0</div>'+
+        '<div style="font-size:10px;color:var(--text2)">🟢 متصل الآن</div></div>'+
+      '<div style="flex:1;min-width:110px;background:rgba(255,34,68,.07);border:1px solid rgba(255,34,68,.25);border-radius:10px;padding:10px 12px">'+
+        '<div style="font-size:19px;font-weight:900;color:var(--danger)" id="mlc-count-blk">0</div>'+
+        '<div style="font-size:10px;color:var(--text2)">⛔ موقوف</div></div>'+
+    '</div>'+
+    '<div class="fg" style="margin-bottom:12px">'+
+      '<input class="fc" id="mlc-search" placeholder="🔍 بحث باسم المختبر أو اليوزر..." oninput="mlcLabsRender()">'+
+    '</div>'+
+    '<div id="mlc-labs-list"></div>';
+  pane.appendChild(card);
+  mlcLabsLoad();
+}
+
+window.mlcLabsLoad=function(force){
+  var db=_db();
+  if(!db){
+    var box=document.getElementById('mlc-labs-list');
+    if(box) box.innerHTML='<div class="empty-state"><div>⚠️</div><div style="font-size:12px">لا يوجد اتصال بـ Firebase</div></div>';
+    return;
+  }
+  if(!_bound || force){
+    _bound=true;
+    db.ref('sldir').on('value', function(s){ _sl=s.val()||{}; mlcLabsRender(); });
+    db.ref('sllink').on('value', function(s){ _links=s.val()||{}; mlcLabsRender(); });
+  }
+};
+
+function linkCount(u){
+  var n=0;
+  Object.keys(_links||{}).forEach(function(pro){
+    if(_links[pro] && _links[pro][u]) n++;
+  });
+  return n;
+}
+
+window.mlcLabsRender=function(){
+  var box=document.getElementById('mlc-labs-list'); if(!box) return;
+  var q=((document.getElementById('mlc-search')||{}).value||'').trim().toLowerCase();
+  var keys=Object.keys(_sl||{});
+  var all=keys.length, on=0, blk=0;
+  keys.forEach(function(u){ if(_sl[u].online) on++; if(_sl[u].blocked) blk++; });
+  var e1=document.getElementById('mlc-count-all'); if(e1) e1.textContent=all;
+  var e2=document.getElementById('mlc-count-on');  if(e2) e2.textContent=on;
+  var e3=document.getElementById('mlc-count-blk'); if(e3) e3.textContent=blk;
+
+  var list=keys.filter(function(u){
+    if(!q) return true;
+    return u.toLowerCase().indexOf(q)>=0 || String(_sl[u].n||'').toLowerCase().indexOf(q)>=0;
+  }).sort(function(a,b){ return (_sl[b].ts||0)-(_sl[a].ts||0); });
+
+  if(!list.length){
+    box.innerHTML='<div class="empty-state"><div>💬</div><div style="font-size:12px">لا يوجد مختبر MedLabChat مسجّل</div></div>';
+    return;
+  }
+  box.innerHTML=list.map(function(u){
+    var v=_sl[u]||{}, n=linkCount(u);
+    var when=v.ts?new Date(v.ts).toLocaleDateString('ar'):'';
+    return '<div class="user-row" style="'+(v.blocked?'opacity:.65;':'')+'border-color:'+(v.blocked?'rgba(255,34,68,.35)':'rgba(0,212,255,.25)')+'">'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'+
+          '<span class="uname">🏥 '+_esc(v.n||u)+'</span>'+
+          '<span style="background:rgba(0,212,255,.12);color:var(--primary);border:1px solid rgba(0,212,255,.3);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">@'+_esc(u)+'</span>'+
+          (v.blocked
+            ? '<span style="background:rgba(255,34,68,.15);color:var(--danger);border:1px solid rgba(255,34,68,.4);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">⛔ موقوف</span>'
+            : '<span style="background:rgba(0,245,147,.12);color:'+(v.online?'var(--success)':'var(--text2)')+';border:1px solid rgba(0,245,147,.3);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">'+(v.online?'🟢 متصل':'⚪ غير متصل')+'</span>')+
+        '</div>'+
+        '<div style="font-size:10px;color:var(--text2);margin-top:3px">🔗 أضاف '+n+' مختبر'+(when?' · سُجّل '+when:'')+'</div>'+
+      '</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">'+
+        '<button class="btn btn-sm" style="min-width:70px;background:'+(v.blocked?'rgba(0,245,147,.15)':'rgba(255,170,0,.12)')+';color:'+(v.blocked?'var(--success)':'var(--warning)')+';border:1px solid '+(v.blocked?'rgba(0,245,147,.4)':'rgba(255,170,0,.35)')+'" onclick="mlcToggleBlock(\''+u+'\')">'+(v.blocked?'✅ تفعيل':'⛔ إيقاف')+'</button>'+
+        '<button class="btn btn-sm btn-d" title="حذف الحساب" onclick="mlcDeleteLab(\''+u+'\')">🗑️</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+};
+
+window.mlcToggleBlock=function(u){
+  var db=_db(); if(!db) return;
+  var v=_sl[u]||{}, nb=!v.blocked;
+  if(nb && !confirm('إيقاف حساب "'+(v.n||u)+'"؟ لن يتمكن من الدخول أو المراسلة.')) return;
+  db.ref('sldir/'+u).update({ blocked:nb }).then(function(){
+    _notif(nb?'⛔ تم الإيقاف':'✅ تم التفعيل', (v.n||u)+(nb?' لن يستطيع استخدام MedLabChat':' يستطيع الآن استخدام MedLabChat'), nb?'warning':'success');
+  }).catch(function(){ _notif('خطأ','فشل الحفظ في Firebase','error'); });
+};
+
+window.mlcDeleteLab=function(u){
+  var db=_db(); if(!db) return;
+  var v=_sl[u]||{};
+  if(!confirm('حذف حساب "'+(v.n||u)+'" نهائياً مع كل روابطه؟')) return;
+  var ups={};
+  ups['sldir/'+u]=null;
+  ups['slof/'+u]=null;
+  Object.keys(_links||{}).forEach(function(pro){
+    if(_links[pro] && _links[pro][u]) ups['sllink/'+pro+'/'+u]=null;
+  });
+  db.ref().update(ups).then(function(){
+    _notif('تم','تم حذف حساب '+(v.n||u),'success');
+  }).catch(function(){ _notif('خطأ','فشل الحذف','error'); });
+};
+
+/* حقن البطاقة عند فتح التبويب أو بعد التحميل */
+function boot(){
+  injectCard();
+  var btn=document.getElementById('tab-sidelab');
+  if(btn && !btn._mlcBound){
+    btn._mlcBound=true;
+    btn.addEventListener('click', function(){ setTimeout(injectCard, 60); });
+  }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(boot,300); });
+else setTimeout(boot,300);
+setTimeout(boot,1500);
+})();
+
+</script>
 </body>
 </html>

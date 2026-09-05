@@ -795,23 +795,70 @@ function loadFirebase(){
   return _fbLoadingPromise;
 }
 
+// ═════════════════════════════════════════════════
+// 🔐 دخول الأدمن إلى Firebase
+// قواعد قاعدة البيانات تسمح بالكتابة على admin/users لـ UID واحد فقط،
+// لذلك نسجّل بحساب الأدمن الحقيقي بدل الدخول المجهول.
+// ⚠️ كلمة المرور **غير مكتوبة في الملف** — تُطلب مرة واحدة عند فتح اللوحة
+//    وتُحفظ في sessionStorage (تنمسح عند إغلاق النافذة). فحتى لو تسرّب
+//    هذا الملف لا يحمل أي سرّ.
+// ═════════════════════════════════════════════════
+const ADMIN_EMAIL = 'saif@medlabpro.local';
+const _ADM_PW_KEY = 'mlp_adm_pw';
+let   fbIsAdmin   = false;
+
+function _getAdminPw(){
+  let pw = '';
+  try{ pw = sessionStorage.getItem(_ADM_PW_KEY) || ''; }catch(_){}
+  if(!pw){
+    pw = prompt('🔐 كلمة مرور حساب الأدمن\n(' + ADMIN_EMAIL + ')') || '';
+    if(pw){ try{ sessionStorage.setItem(_ADM_PW_KEY, pw); }catch(_){} }
+  }
+  return pw;
+}
+function adminRelogin(){
+  try{ sessionStorage.removeItem(_ADM_PW_KEY); }catch(_){}
+  location.reload();
+}
+
 function initFB(resolve){
   try{
     if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     fbDb  = firebase.database();
     fbAuth= firebase.auth();
     fbReady=true;
-    fbAuth.signInAnonymously().catch(()=>{});
-    setFbStatus(true);
-    resolve(true);
+
+    const _pw = _getAdminPw();
+    const _fallback = (why)=>{
+      fbIsAdmin=false;
+      try{ sessionStorage.removeItem(_ADM_PW_KEY); }catch(_){}
+      setFbStatus(false, '⚠️ قراءة فقط — لم يتم دخول الأدمن');
+      // دخول مجهول كما كان سابقاً — حتى تبقى القراءة والمسارات الأخرى تعمل
+      fbAuth.signInAnonymously().catch(()=>{});
+      setTimeout(()=>alert('⚠️ تعذّر دخول الأدمن:\n'+why+
+        '\n\nاللوحة تعمل بوضع القراءة فقط (لن تُحفظ أي تعديلات).'+
+        '\nحدّث الصفحة وأعد إدخال كلمة المرور.'), 300);
+      resolve(true);
+    };
+
+    if(!_pw){ _fallback('لم تُدخَل كلمة مرور'); return; }
+
+    fbAuth.signInWithEmailAndPassword(ADMIN_EMAIL, _pw)
+      .then(()=>{
+        fbIsAdmin=true;
+        setFbStatus(true, '✅ Firebase متصل (أدمن)');
+        resolve(true);
+      })
+      .catch(err=> _fallback((err&&err.message)||String(err)));
+
   }catch(e){ console.error(e); setFbStatus(false); resolve(false); }
 }
 
-function setFbStatus(ok){
+function setFbStatus(ok, text){
   const dot=document.getElementById('fb-dot');
   const lbl=document.getElementById('fb-status-lbl');
   if(dot) dot.style.background = ok ? 'var(--success)' : 'var(--danger)';
-  if(lbl) lbl.textContent = ok ? 'Firebase متصل' : 'Firebase غير متصل';
+  if(lbl) lbl.textContent = text || (ok ? 'Firebase متصل' : 'Firebase غير متصل');
 }
 
 // ═══════════════════════════════════════════════════

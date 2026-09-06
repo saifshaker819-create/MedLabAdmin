@@ -29,10 +29,6 @@ self.addEventListener('fetch', e => {
         }
         return res;
       })
-      .catch(() =>
-        caches.match(req).then(hit =>
-          hit || (req.mode === 'navigate' ? caches.match('admin-panel.html') : undefined)
-        )
-      )
+      .catch(() => caches.match(req).then(hit => hit || caches.match(req.url)))
   );
 });

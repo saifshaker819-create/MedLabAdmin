@@ -49,10 +49,7 @@ window.MLP_ICON512='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAA
     var l=document.getElementById('mlp-manifest');
     l.href='data:application/manifest+json;base64,'+b64utf8(JSON.stringify(mf));
     var a=document.getElementById('mlp-atouch'); if(a) a.href=window.MLP_ICON192;
-    /* إذا رفعت manifest.json بجانب الصفحة نستعمله (يضيف أيقونة maskable لأندرويد) */
-    fetch('manifest.json',{method:'HEAD'}).then(function(r){
-      if(r.ok && (r.headers.get('content-type')||'').indexOf('json')>=0) l.href='manifest.json';
-    }).catch(function(){});
+    /* دائماً manifest داخلي — start_url هو نفس رابط هذه الصفحة مهما كان اسم الملف */
   }catch(e){}
 })();
 </script>

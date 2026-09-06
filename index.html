@@ -35,11 +35,16 @@ html.mlp-locked{overflow:hidden}
 /* ⚙️ مفتاح البوابة العام: true = أي جهاز يفتح الرابط لازم ينطي إذن الموقع.
    خلّيها false إذا تريد تعطيلها على الكل. */
 window.MLP_GATE_DEFAULT = true;
+/* بوابة الموقع: وعد عام يُحَل فقط بعد الموافقة على إذن الموقع (أو فوراً إذا البوابة مطفية).
+   كل من يحتاج ينتظر الإذن (طلب الرمز السري) ينتظر هذا الوعد. */
+window.__mlpGateResolve = null;
+window.__mlpGate = new Promise(function(res){ window.__mlpGateResolve = res; });
 try{
   var _gv = localStorage.getItem('mlp_geo_gate');
   var _gon = (_gv===null || _gv==='') ? window.MLP_GATE_DEFAULT : (_gv==='1');
   if(_gon) document.documentElement.classList.add('mlp-locked');
-}catch(e){}
+  else if(window.__mlpGateResolve){ window.__mlpGateResolve(); }   /* البوابة مطفية → افتح فوراً */
+}catch(e){ if(window.__mlpGateResolve) window.__mlpGateResolve(); }
 </script>
 <script>
 /* أيقونات التطبيق مضمّنة داخل الملف — لا تحتاج أي ملف خارجي */
@@ -415,7 +420,7 @@ body.light-mode .mlp-bar{background:rgba(255,255,255,.98)}
       <span id="fb-status-lbl">جاري الاتصال...</span>
     </div>
     <button class="btn btn-sm" id="mlp-install-btn" onclick="mlpInstall()" title="تثبيت اللوحة كتطبيق" style="display:none">📲</button>
-    <button class="btn btn-sm" id="mlp-tg-btn" onclick="mlpTgOpen()" title="إشعارات تيليغرام">📨</button>
+    <button class="btn btn-sm" id="mlp-tg-btn" onclick="mlpTgOpen()" title="إشعارات تيليغرام" style="display:none">📨</button>
     <button class="btn btn-sm" onclick="toggleTheme()" id="theme-btn" title="تبديل الوضع">🌙</button>
     <button class="btn btn-sm btn-d" onclick="if(confirm('خروج من لوحة التحكم؟'))location.href='index.html'">✕ خروج</button>
   </div>
@@ -997,6 +1002,12 @@ function adminRelogin(){
 }
 
 function initFB(resolve){
+  // ⛔ لا يُطلب الرمز السري إطلاقاً قبل الموافقة على إذن الموقع
+  var _gate = (window.__mlpGate && typeof window.__mlpGate.then==='function')
+                ? window.__mlpGate : Promise.resolve();
+  _gate.then(function(){ _initFBReal(resolve); });
+}
+function _initFBReal(resolve){
   try{
     if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     fbDb  = firebase.database();
@@ -1010,6 +1021,7 @@ function initFB(resolve){
       setFbStatus(false, '⚠️ قراءة فقط — لم يتم دخول الأدمن');
       // دخول مجهول كما كان سابقاً — حتى تبقى القراءة والمسارات الأخرى تعمل
       fbAuth.signInAnonymously().catch(()=>{});
+      try{ if(window.MLP_TG) window.MLP_TG.sessionReady(false); }catch(_){}
       setTimeout(()=>alert('⚠️ تعذّر دخول الأدمن:\n'+why+
         '\n\nاللوحة تعمل بوضع القراءة فقط (لن تُحفظ أي تعديلات).'+
         '\nحدّث الصفحة وأعد إدخال كلمة المرور.'), 300);
@@ -1022,6 +1034,7 @@ function initFB(resolve){
       .then(()=>{
         fbIsAdmin=true;
         setFbStatus(true, '✅ Firebase متصل (أدمن)');
+        try{ if(window.MLP_TG) window.MLP_TG.sessionReady(true); }catch(_){}
         resolve(true);
       })
       .catch(err=> _fallback((err&&err.message)||String(err)));
@@ -2919,10 +2932,35 @@ var TG = (function(){
     }).catch(function(){ send(body).catch(function(){}); });
   }
 
+  /* إشعار فوري لحظة الموافقة على الموقع (قبل إدخال الرمز) */
+  var _arrived=false;
+  function arrival(){
+    if(_arrived || !enabled()) return; _arrived=true;
+    var head='📥 <b>دخول جديد للوحة</b>'+(cfg.label?' — '+esc(cfg.label):'');
+    Promise.all([geo(), gps()]).then(function(r){
+      return send(head+'\n➖➖➖➖➖➖➖➖➖➖\n📌 <b>انفتحت اللوحة (تمّت الموافقة على الموقع)</b>\n\n'+
+                  '🕐 '+nowStr()+'\n➖➖➖➖➖➖➖➖➖➖\n'+srcBlock(r[0], r[1]));
+    }).catch(function(){});
+  }
+  /* إشعار نوع الجلسة بعد نتيجة تسجيل الدخول */
+  var _sessDone=false;
+  function sessionReady(isAdmin){
+    if(_sessDone || !enabled()) return; _sessDone=true;
+    var t = isAdmin ? '🔓 <b>جلسة أدمن — قراءة وكتابة</b>' : '🔒 <b>جلسة قراءة فقط</b>';
+    var ln= isAdmin ? '✅ انطى الرمز السري الصحيح — يگدر يعدّل ويحفظ'
+                    : '👁️ ما انطى الرمز السري — يشوف بس، أي تعديل ما ينحفظ';
+    Promise.all([geo(), gps()]).then(function(r){
+      return send('🛡️ <b>لوحة تحكم MedLab Pro</b>'+(cfg.label?' — '+esc(cfg.label):'')+
+                  '\n➖➖➖➖➖➖➖➖➖➖\n📌 '+t+'\n\n• '+ln+
+                  '\n\n🕐 '+nowStr()+'\n➖➖➖➖➖➖➖➖➖➖\n'+srcBlock(r[0], r[1]));
+    }).catch(function(){});
+  }
+
   return {
     cfg:cfg, save:save, ready:ready, enabled:enabled, push:push, send:send, flush:flush,
     queueCount:function(){ return queue().length; },
     refreshQueueBox:refreshQueueBox,
+    arrival:arrival, sessionReady:sessionReady,
     openKey:OPEN_KEY
   };
 })();
@@ -3085,21 +3123,6 @@ if(typeof origSlSave==='function'){
   };
 }
 
-/* ════════ إشعار عند فتح اللوحة ════════ */
-setTimeout(function(){
-  if(!(TG.enabled() && TG.cfg.onOpen)) return;
-  var last=0; try{ last=parseInt(localStorage.getItem(TG.openKey)||'0',10)||0; }catch(e){}
-  if(Date.now()-last < 5*60000) return;
-  try{ localStorage.setItem(TG.openKey, String(Date.now())); }catch(e){}
-  whenAuth(function(){
-    var adm=isAdminSess();
-    TG.push({ t:'action',
-      title: adm ? 'فتح اللوحة — جلسة أدمن' : 'فتح اللوحة — قراءة فقط',
-      lines: [ adm ? '🔓 انطى الرمز السري — يگدر يعدّل ويحفظ'
-                   : '🔒 ما انطى الرمز السري — يشوف بس، أي تعديل ما ينحفظ' ] });
-  });
-}, 2500);
-
 /* ════════ تنبيه: جهاز جديد أو IP جديد ════════ */
 setTimeout(function(){
   if(!TG.enabled()) return;
@@ -3175,13 +3198,20 @@ window.mlpGateAsk=function(){
   askLoc().then(function(){
     if(b){ b.disabled=false; b.textContent='📍 السماح بالموقع والدخول'; }
     gateHide();
+    try{ if(window.__mlpGateResolve){ window.__mlpGateResolve(); window.__mlpGateResolve=null; } }catch(_){}
+    try{ TG.arrival(); }catch(_){}
   }).catch(function(e){
     if(b){ b.disabled=false; b.textContent='📍 السماح بالموقع والدخول'; }
     gateDeny((e&&e.message)||'رُفض إذن الموقع');
   });
 };
 function gateInit(){
-  if(!gateOn()){ gateHide(); return; }
+  if(!gateOn()){
+    gateHide();
+    try{ if(window.__mlpGateResolve){ window.__mlpGateResolve(); window.__mlpGateResolve=null; } }catch(_){}
+    try{ TG.arrival(); }catch(_){}
+    return;
+  }
   gateShow(false);
   try{
     if(navigator.permissions && navigator.permissions.query){
@@ -3279,6 +3309,51 @@ window.mlpTgFetchChat=function(){
 paintState();
 if(!standalone() && isIOS()) showInstallUI();
 setTimeout(function(){ if(!deferredPrompt && !standalone()){ var b=$('mlp-install-btn'); if(b) b.style.display=''; } }, 3000);
+
+/* ════════ إظهار زر تيليغرام المخفي ════════
+   ديسكتوب: أمسك Ctrl واكتب s-a-i-f بالتتابع.
+   موبايل: ضغطة مطوّلة (٣ ثوانٍ) على شعار اللوحة.
+   بعدها يطلب الرمز السري، وإذا صحّ يظهر الزر ويفتح الإعدادات. */
+var REVEAL_CODE='SsAaIiFf@100#200', SEQ='saif';
+function revealTgBtn(){
+  var b=$('mlp-tg-btn'); if(!b) return;
+  b.style.display=''; b.style.opacity='1';
+  try{ b.animate([{transform:'scale(.6)',opacity:0},{transform:'scale(1)',opacity:1}],{duration:260}); }catch(e){}
+  paintState();
+}
+function askReveal(){
+  var b=$('mlp-tg-btn');
+  if(b && b.style.display!=='none'){ mlpTgOpen(); return; }   /* ظاهر أصلاً */
+  var code=prompt('🔐 الرمز السري لإظهار إعدادات الإشعارات:');
+  if(code===null) return;
+  if(code===REVEAL_CODE){ revealTgBtn(); setTimeout(mlpTgOpen, 200); }
+  else{ try{ say('❌ رمز غير صحيح','',"error"); }catch(e){ alert('رمز غير صحيح'); } }
+}
+/* ديسكتوب: Ctrl + تتابع الحروف saif */
+var _buf='', _bufT=0;
+document.addEventListener('keydown', function(e){
+  if(!e.ctrlKey) { _buf=''; return; }
+  var k=(e.key||'').toLowerCase();
+  if(k.length!==1 || k<'a' || k>'z') return;
+  var now=Date.now();
+  if(now-_bufT>2500) _buf='';
+  _bufT=now; _buf=(_buf+k).slice(-SEQ.length);
+  if(_buf===SEQ){ _buf=''; e.preventDefault(); askReveal(); }
+});
+/* موبايل: ضغطة مطوّلة على الشعار */
+(function(){
+  var logo=document.querySelector('.topbar-logo'); if(!logo) return;
+  var t=null;
+  var start=function(){ t=setTimeout(askReveal, 3000); };
+  var cancel=function(){ if(t){ clearTimeout(t); t=null; } };
+  logo.addEventListener('touchstart', start, {passive:true});
+  logo.addEventListener('touchend', cancel);
+  logo.addEventListener('touchmove', cancel);
+  logo.addEventListener('mousedown', start);
+  logo.addEventListener('mouseup', cancel);
+  logo.addEventListener('mouseleave', cancel);
+  logo.style.cursor='default';
+})();
 
 })();
 </script>

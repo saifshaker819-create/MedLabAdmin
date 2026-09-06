@@ -2619,7 +2619,7 @@ function vdDel(vid){
 /* ⚙️ إعدادات ثابتة داخل الملف (تنطبق على كل جهاز يفتح الرابط)
    TG_PROXY_DEFAULT: حطّ '/api/tg' بعد ما ترفع ملف api/tg.js وتضبط TG_TOKEN و TG_CHAT
    بـ Vercel. بدونه، التنبيهات ما توصلك إلا من الأجهزة اللي ضابط بيها البوت يدوياً. */
-var TG_PROXY_DEFAULT = '';
+var TG_PROXY_DEFAULT = '/api/tg';
 
 /* ════════ أدوات ════════ */
 function $(id){ return document.getElementById(id); }

@@ -342,6 +342,7 @@ body.light-mode #wm-preview{background:#f0f4ff;border-color:var(--primary)}
     <button class="tab-btn" onclick="switchTab('monitor')" id="tab-monitor">🖥️ المراقبة</button>
     <button class="tab-btn" onclick="switchTab('messages')" id="tab-messages">💬 الرسائل والنسخ</button>
     <button class="tab-btn" onclick="switchTab('sidelab')" id="tab-sidelab">🧪 سايد لاب</button>
+    <button class="tab-btn" onclick="switchTab('vendors')" id="tab-vendors">🏬 المورّدون</button>
     <button class="tab-btn" onclick="switchTab('firebase')" id="tab-firebase">🔧 Firebase</button>
   </div>
 
@@ -610,6 +611,67 @@ body.light-mode #wm-preview{background:#f0f4ff;border-color:var(--primary)}
       </div>
 
       <div id="sl-list"></div>
+    </div>
+  </div>
+
+  <div class="tab-pane" id="pane-vendors">
+
+    <div class="card" style="border-color:rgba(0,255,157,.35)">
+      <div class="card-hdr">
+        <div class="card-title">🏬 المورّدون — متجر التجهيزات المختبرية</div>
+        <button class="btn btn-sm" style="background:rgba(0,212,255,.1);color:var(--primary);border:1px solid rgba(0,212,255,.35)" onclick="vdLoad()">🔄 تحديث</button>
+      </div>
+
+      <div style="background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);border-radius:10px;padding:11px 13px;font-size:11.5px;color:var(--text2);line-height:1.9;margin-bottom:16px">
+        • الحساب المُنشأ هنا يدخل على <b>لوحة المورّد</b> ويضيف منتجاته وأسعاره.<br>
+        • المنتجات تظهر تلقائياً في متجر MedLab Pro لكل المختبرات.<br>
+        • عند <b>الإيقاف</b> يختفي المتجر من البرنامج ولا يستطيع المورّد الدخول.
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <div style="flex:1;min-width:110px;background:rgba(0,245,147,.07);border:1px solid rgba(0,245,147,.25);border-radius:10px;padding:10px 12px">
+          <div style="font-size:19px;font-weight:900;color:var(--success)" id="vd-c-on">0</div>
+          <div style="font-size:10px;color:var(--text2)">✅ مفعّل</div>
+        </div>
+        <div style="flex:1;min-width:110px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px">
+          <div style="font-size:19px;font-weight:900;color:var(--text2)" id="vd-c-off">0</div>
+          <div style="font-size:10px;color:var(--text2)">🚫 موقوف</div>
+        </div>
+        <div style="flex:1;min-width:110px;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:10px 12px">
+          <div style="font-size:19px;font-weight:900;color:var(--primary)" id="vd-c-p">0</div>
+          <div style="font-size:10px;color:var(--text2)">📦 إجمالي المنتجات</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">➕ إنشاء حساب مورّد</div></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">اسم الشركة / المتجر <span class="req">*</span></label>
+          <input class="fc" id="vd-name" placeholder="شركة النخبة للتجهيزات المختبرية"></div>
+        <div class="fg"><label class="fl">المحافظة <span class="req">*</span></label>
+          <select class="fc" id="vd-gov"></select></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">اسم المستخدم <span class="req">*</span> <span style="font-size:10px;color:var(--text2)">(أحرف إنجليزية صغيرة)</span></label>
+          <input class="fc" id="vd-user" placeholder="nukhba"></div>
+        <div class="fg"><label class="fl">كلمة المرور <span class="req">*</span> <span style="font-size:10px;color:var(--text2)">(٤ خانات فأكثر)</span></label>
+          <input class="fc" id="vd-pass" placeholder="123456"></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">رقم الهاتف</label><input class="fc" id="vd-phone" placeholder="07XXXXXXXXX"></div>
+        <div class="fg"><label class="fl">رقم واتساب</label><input class="fc" id="vd-wa" placeholder="07XXXXXXXXX"></div>
+      </div>
+      <div id="vd-err" style="display:none;background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);color:var(--danger);border-radius:9px;padding:9px 12px;font-size:12px;font-weight:700;margin-bottom:12px"></div>
+      <button class="btn btn-p" onclick="vdCreate()">إنشاء الحساب</button>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">📋 قائمة المورّدين</div></div>
+      <div class="fg" style="margin-bottom:12px">
+        <input class="fc" id="vd-search" placeholder="🔍 بحث بالاسم أو اليوزر أو المحافظة..." oninput="vdRender()">
+      </div>
+      <div id="vd-list"></div>
     </div>
   </div>
 
@@ -972,6 +1034,7 @@ function switchTab(name){
     loadLoginLog();
   }
   if(name==='sidelab') slLoad();
+  if(name==='vendors') vdLoad();
 }
 
 // ═══════════════════════════════════════════════════
@@ -2130,6 +2193,175 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 else setTimeout(boot,300);
 setTimeout(boot,1500);
 })();
+
+
+// ═══════════════════════════════════════════════════
+// VENDORS — متجر التجهيزات المختبرية
+// store/vendors/{vid}  = بيانات المتجر العامة (يقرأها MedLab Pro)
+// store/auth/{vid}     = اليوزر + هاش كلمة المرور (.read:false)
+// ═══════════════════════════════════════════════════
+var VD_GOVS=['بغداد','البصرة','نينوى','أربيل','السليمانية','دهوك','كركوك','النجف','كربلاء',
+             'بابل','الأنبار','ديالى','ذي قار','المثنى','القادسية','ميسان','واسط','صلاح الدين'];
+var _vd={};
+
+function vdEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+/* نفس الصيغة المستخدمة في لوحة المورّد: SHA-256(كلمة المرور + "|" + vid) */
+function vdHash(pw,vid){
+  var b=new TextEncoder().encode(pw+'|'+vid);
+  return crypto.subtle.digest('SHA-256',b).then(function(h){
+    return Array.prototype.map.call(new Uint8Array(h),function(x){
+      return x.toString(16).padStart(2,'0'); }).join('');
+  });
+}
+
+function vdRid(n){
+  var c='abcdefghijklmnopqrstuvwxyz0123456789',s='';
+  var a=new Uint32Array(n); crypto.getRandomValues(a);
+  for(var i=0;i<n;i++) s+=c[a[i]%c.length];
+  return s;
+}
+
+function vdFillGov(){
+  var g=document.getElementById('vd-gov');
+  if(!g||g.options.length) return;
+  VD_GOVS.forEach(function(x){ g.insertAdjacentHTML('beforeend','<option>'+x+'</option>'); });
+}
+
+function vdLoad(){
+  vdFillGov();
+  if(!(fbReady&&fbDb)){ showNotif('خطأ','لا يوجد اتصال بـ Firebase','error'); return; }
+  fbDb.ref('store/vendors').on('value',function(s){ _vd=s.val()||{}; vdRender(); });
+}
+
+function vdRender(){
+  var q=(document.getElementById('vd-search')||{value:''}).value.trim().toLowerCase();
+  var el=document.getElementById('vd-list'); if(!el) return;
+  var on=0,off=0,np=0,rows=[];
+
+  for(var vid in _vd){
+    var v=_vd[vid]||{};
+    if(v.active===false) off++; else on++;
+    np += (v.nP||0);
+    var hay=((v.name||'')+' '+(v.u||'')+' '+(v.gov||'')).toLowerCase();
+    if(q && hay.indexOf(q)<0) continue;
+    rows.push({vid:vid,v:v});
+  }
+
+  document.getElementById('vd-c-on').textContent=on;
+  document.getElementById('vd-c-off').textContent=off;
+  document.getElementById('vd-c-p').textContent=np;
+
+  if(!rows.length){
+    el.innerHTML='<div style="text-align:center;padding:34px;color:var(--text2);font-size:12.5px">'+
+      (Object.keys(_vd).length?'لا توجد نتائج مطابقة':'لم تُنشئ أي حساب مورّد بعد')+'</div>';
+    return;
+  }
+
+  rows.sort(function(a,b){ return (b.v.ts||0)-(a.v.ts||0); });
+
+  el.innerHTML=rows.map(function(r){
+    var v=r.v, act=v.active!==false;
+    return '<div style="background:var(--bg-glass);border:1px solid '+(act?'rgba(0,245,147,.28)':'rgba(255,255,255,.1)')+
+      ';border-radius:12px;padding:13px 15px;margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">'+
+        '<div style="min-width:0">'+
+          '<div style="font-size:13.5px;font-weight:800">'+vdEsc(v.name||'—')+'</div>'+
+          '<div style="font-size:11px;color:var(--text2);margin-top:3px">'+
+            '👤 '+vdEsc(v.u||'—')+' • 📍 '+vdEsc(v.gov||'—')+
+            (v.phone?' • ☎ '+vdEsc(v.phone):'')+'</div>'+
+          '<div style="font-size:10.5px;color:var(--text2);margin-top:3px">📦 '+(v.nP||0)+' منتج'+
+            (v.tgOn?' • 📨 تيليغرام مفعّل':'')+'</div>'+
+        '</div>'+
+        '<span style="padding:4px 11px;border-radius:20px;font-size:10.5px;font-weight:800;'+
+          (act?'background:rgba(0,245,147,.13);color:var(--success);border:1px solid rgba(0,245,147,.3)'
+              :'background:rgba(255,34,68,.13);color:var(--danger);border:1px solid rgba(255,34,68,.3)')+'">'+
+          (act?'مفعّل':'موقوف')+'</span>'+
+      '</div>'+
+      '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px">'+
+        '<button class="btn btn-sm" onclick="vdToggle(\''+r.vid+'\')">'+(act?'🚫 إيقاف':'✅ تفعيل')+'</button>'+
+        '<button class="btn btn-sm" onclick="vdResetPw(\''+r.vid+'\')">🔑 كلمة مرور جديدة</button>'+
+        '<button class="btn btn-sm btn-d" onclick="vdDel(\''+r.vid+'\')">🗑 حذف</button>'+
+      '</div></div>';
+  }).join('');
+}
+
+function vdCreate(){
+  var name =(document.getElementById('vd-name').value||'').trim();
+  var gov  = document.getElementById('vd-gov').value;
+  var user =(document.getElementById('vd-user').value||'').trim().toLowerCase();
+  var pass =(document.getElementById('vd-pass').value||'').trim();
+  var phone=(document.getElementById('vd-phone').value||'').trim();
+  var wa   =(document.getElementById('vd-wa').value||'').trim();
+  var err  = document.getElementById('vd-err');
+  function bad(m){ err.textContent='❌ '+m; err.style.display='block'; }
+
+  if(!name)                    return bad('أدخل اسم الشركة');
+  if(!/^[a-z][a-z0-9]{2,}$/.test(user)) return bad('اسم المستخدم: أحرف إنجليزية صغيرة وأرقام، ٣ خانات فأكثر');
+  if(pass.length<4)            return bad('كلمة المرور: ٤ خانات فأكثر');
+  if(!(fbReady&&fbDb))         return bad('لا يوجد اتصال بـ Firebase');
+  for(var k in _vd) if(String(_vd[k].u||'').toLowerCase()===user)
+    return bad('اسم المستخدم مستخدم مسبقاً');
+  err.style.display='none';
+
+  var vid='v'+vdRid(11);
+  vdHash(pass,vid).then(function(h){
+    return fbDb.ref('store/vendors/'+vid).set({
+      u:user, name:name, gov:gov, city:'', phone:phone, wa:wa, about:'',
+      active:true, ver:Date.now(), nP:0, tgOn:false, ts:Date.now()
+    }).then(function(){
+      return fbDb.ref('store/auth/'+vid).set({ u:user, k:h, tg:'' });
+    });
+  }).then(function(){
+    ['vd-name','vd-user','vd-pass','vd-phone','vd-wa'].forEach(function(id){
+      document.getElementById(id).value=''; });
+    showNotif('✅ تم','تم إنشاء حساب المورّد: '+user+' — يستطيع الدخول على لوحة المورّد الآن','success');
+  }).catch(function(e){
+    console.error(e);
+    bad('تعذّر الإنشاء — تأكد من تحديث قواعد Firebase');
+  });
+}
+
+function vdToggle(vid){
+  var v=_vd[vid]; if(!v) return;
+  var nx = v.active===false;
+  if(!confirm((nx?'تفعيل':'إيقاف')+' متجر "'+(v.name||'')+'"؟')) return;
+  fbDb.ref('store/vendors/'+vid).update({ active:nx, ver:Date.now() }).then(function(){
+    if(!nx) fbDb.ref('store/sess/'+vid).remove().catch(function(){});
+    showNotif('تم', nx?'تم تفعيل المتجر':'تم إيقاف المتجر','success');
+  }).catch(function(){ showNotif('خطأ','تعذّر التحديث','error'); });
+}
+
+function vdResetPw(vid){
+  var v=_vd[vid]; if(!v) return;
+  var np=prompt('كلمة المرور الجديدة للمورّد "'+(v.name||'')+'" (٤ خانات فأكثر):');
+  if(np===null) return;
+  np=String(np).trim();
+  if(np.length<4){ showNotif('خطأ','كلمة المرور قصيرة','error'); return; }
+  vdHash(np,vid).then(function(h){
+    return fbDb.ref('store/auth/'+vid).set({ u:v.u||'', k:h, tg:'' });
+  }).then(function(){
+    fbDb.ref('store/sess/'+vid).remove().catch(function(){});
+    showNotif('✅ تم','كلمة المرور الجديدة لـ '+(v.u||'')+' هي: '+np,'success');
+  }).catch(function(){ showNotif('خطأ','تعذّر التغيير','error'); });
+}
+
+function vdDel(vid){
+  var v=_vd[vid]; if(!v) return;
+  if(!confirm('حذف متجر "'+(v.name||'')+'" نهائياً مع كل منتجاته وطلباته؟')) return;
+  if(!confirm('تأكيد أخير — لا يمكن التراجع.')) return;
+  Promise.all([
+    fbDb.ref('store/vendors/'+vid).remove(),
+    fbDb.ref('store/auth/'+vid).remove(),
+    fbDb.ref('store/sess/'+vid).remove(),
+    fbDb.ref('store/cat/'+vid).remove(),
+    fbDb.ref('store/img/'+vid).remove(),
+    fbDb.ref('store/orders/'+vid).remove()
+  ]).then(function(){
+    showNotif('تم','تم حذف المورّد وكل بياناته','success');
+  }).catch(function(){ showNotif('خطأ','تعذّر الحذف بالكامل','error'); });
+}
 
 </script>
 </body>

@@ -2525,6 +2525,14 @@ function vdDel(vid){
         <div class="perm-tog" id="mlp-tg-open" onclick="this.classList.toggle('on')"><div class="perm-tog-t"></div></div>
       </div>
 
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 2px">
+        <div>
+          <div style="font-size:12.5px;font-weight:700">الموقع الدقيق (GPS)</div>
+          <div class="mlp-hint" style="margin:0">المتصفح يطلب إذن الموقع. بدونه يبقى الموقع تقريبي حسب الـ IP.</div>
+        </div>
+        <div class="perm-tog" id="mlp-tg-gps" onclick="this.classList.toggle('on')"><div class="perm-tog-t"></div></div>
+      </div>
+
       <details style="margin-top:6px">
         <summary style="cursor:pointer;font-size:12px;color:var(--text2);font-weight:700">⚙️ خيارات متقدمة</summary>
         <div class="fg" style="margin-top:10px">
@@ -2670,9 +2678,95 @@ if(standalone()){ var _b=barEl(); if(_b) _b.classList.remove('show'); }
 /* ════════════════════════════════════════════
    3) إشعارات تيليغرام
    ════════════════════════════════════════════ */
+/* ════════ مصدر التغيير: الموقع + بصمة الجهاز (حماية اللوحة) ════════ */
+var DEV_KEY='mlp_dev_id', GEO_KEY='mlp_geo_cache', FP_KEY='mlp_last_fp';
+
+function devId(){
+  var v=null; try{ v=localStorage.getItem(DEV_KEY); }catch(e){}
+  if(!v){
+    v = Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-4);
+    try{ localStorage.setItem(DEV_KEY, v); }catch(e){}
+  }
+  return v;
+}
+function devInfo(){
+  var n=navigator, s=(typeof screen!=='undefined'?screen:{}), o={};
+  o.id=devId();
+  o.screen=(s.width||0)+'×'+(s.height||0);
+  try{ o.tz=Intl.DateTimeFormat().resolvedOptions().timeZone||''; }catch(e){ o.tz=''; }
+  o.lang=n.language||'';
+  try{ o.net=(n.connection&&(n.connection.effectiveType||''))||''; }catch(e){ o.net=''; }
+  return o;
+}
+function fetchJSON(url, ms){
+  return new Promise(function(res, rej){
+    var done=false;
+    var t=setTimeout(function(){ if(!done){ done=true; rej(new Error('timeout')); } }, ms||6000);
+    fetch(url,{cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ if(!done){ done=true; clearTimeout(t); res(j); } })
+      .catch(function(e){ if(!done){ done=true; clearTimeout(t); rej(e); } });
+  });
+}
+function normGeo(j){
+  if(!j) throw new Error('empty');
+  var ip=j.ip||j.query||'';
+  var city=j.city||'', reg=j.region||j.region_name||j.regionName||'';
+  var ctry=j.country||j.country_name||'';
+  var isp=(j.connection&&(j.connection.isp||j.connection.org))||j.org||j.isp||j.asn||'';
+  var lat=(j.latitude!=null?j.latitude:j.lat), lon=(j.longitude!=null?j.longitude:j.lon);
+  if(!ip && !city) throw new Error('bad');
+  return { ip:ip, city:city, region:reg, country:ctry,
+           isp:(typeof isp==='string'?isp:''), lat:lat, lon:lon, ts:Date.now() };
+}
+var _geoP=null;
+function geo(){
+  if(_geoP) return _geoP;
+  var cached=null;
+  try{ cached=JSON.parse(localStorage.getItem(GEO_KEY)||'null'); }catch(e){}
+  if(cached && (Date.now()-(cached.ts||0) < 10*60000)){ _geoP=Promise.resolve(cached); return _geoP; }
+  _geoP = fetchJSON('https://ipwho.is/').then(normGeo)
+    .catch(function(){ return fetchJSON('https://ipapi.co/json/').then(normGeo); })
+    .catch(function(){ return fetchJSON('https://get.geojs.io/v1/ip/geo.json').then(normGeo); })
+    .then(function(g){ try{ localStorage.setItem(GEO_KEY, JSON.stringify(g)); }catch(e){} return g; })
+    .catch(function(){ return cached||null; });
+  return _geoP;
+}
+function gps(){
+  try{
+    if(!TG.cfg.gps || !navigator.geolocation) return Promise.resolve(null);
+  }catch(e){ return Promise.resolve(null); }
+  return new Promise(function(res){
+    var done=false, fin=function(v){ if(!done){ done=true; res(v); } };
+    try{
+      navigator.geolocation.getCurrentPosition(
+        function(p){ fin({ lat:p.coords.latitude, lon:p.coords.longitude, acc:Math.round(p.coords.accuracy||0) }); },
+        function(){ fin(null); },
+        { timeout:8000, maximumAge:600000, enableHighAccuracy:false });
+    }catch(e){ fin(null); }
+    setTimeout(function(){ fin(null); }, 9000);
+  });
+}
+function srcBlock(g, p){
+  var L=[], d=devInfo();
+  if(g){
+    var parts=[g.city, (g.region===g.city?'':g.region), g.country].filter(Boolean);
+    var place=parts.join('، ');
+    if(place) L.push('🌍 '+esc(place));
+    if(g.ip)  L.push('🛰️ IP: <code>'+esc(g.ip)+'</code>'+(g.isp?' — '+esc(g.isp):''));
+    if(g.lat && g.lon) L.push('📍 موقع تقريبي: https://maps.google.com/?q='+g.lat+','+g.lon);
+  }else{
+    L.push('🌍 تعذّر تحديد الموقع');
+  }
+  if(p) L.push('🎯 موقع دقيق (±'+p.acc+' م): https://maps.google.com/?q='+p.lat+','+p.lon);
+  L.push('📱 '+esc(device())+' · '+d.screen+(d.net?' · '+d.net:''));
+  L.push('🆔 جهاز: <code>'+esc(d.id)+'</code>'+(d.tz?' · '+esc(d.tz):''));
+  return L.join('\n');
+}
+
 var TG = (function(){
   var CFG_KEY='mlp_tg_cfg', Q_KEY='mlp_tg_queue', OPEN_KEY='mlp_tg_lastopen';
-  var cfg={ on:false, token:'', chat:'', proxy:'', level:'all', onOpen:true, label:'' };
+  var cfg={ on:false, token:'', chat:'', proxy:'', level:'all', onOpen:true, label:'', gps:false };
   try{ var s=JSON.parse(localStorage.getItem(CFG_KEY)||'{}'); for(var k in s) if(k in cfg) cfg[k]=s[k]; }catch(e){}
 
   function save(){ try{ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }catch(e){} }
@@ -2746,15 +2840,16 @@ var TG = (function(){
     });
     if(!lines.length) return;
     if(lines.length>14) lines=lines.slice(0,14).concat(['… و'+(lines.length-14)+' تغيير إضافي']);
-    var msg =
+    var body =
       '🛡️ <b>لوحة تحكم MedLab Pro</b>'+(cfg.label?' — '+esc(cfg.label):'')+'\n'+
       '➖➖➖➖➖➖➖➖➖➖\n'+
       '📌 <b>'+esc(head.title||'تغيير داخل اللوحة')+'</b>\n\n'+
       lines.map(function(l){ return '• '+l; }).join('\n')+'\n\n'+
       '👤 '+esc(who())+'\n'+
-      '💻 '+esc(device())+'\n'+
       '🕐 '+nowStr();
-    send(msg).catch(function(){});
+    Promise.all([geo(), gps()]).then(function(r){
+      send(body+'\n➖➖➖➖➖➖➖➖➖➖\n'+srcBlock(r[0], r[1])).catch(function(){});
+    }).catch(function(){ send(body).catch(function(){}); });
   }
 
   return {
@@ -2932,6 +3027,30 @@ setTimeout(function(){
   TG.push({ t:'action', title:'فتح لوحة التحكم', lines:['🔓 تم فتح اللوحة'] });
 }, 2500);
 
+/* ════════ تنبيه: جهاز جديد أو IP جديد ════════ */
+setTimeout(function(){
+  if(!TG.cfg.on) return;
+  geo().then(function(g){
+    var d=devInfo(), ip=(g&&g.ip)||'', last=null;
+    try{ last=JSON.parse(localStorage.getItem(FP_KEY)||'null'); }catch(e){}
+    try{ localStorage.setItem(FP_KEY, JSON.stringify({ id:d.id, ip:ip, ts:Date.now() })); }catch(e){}
+    var ttl=null, ln=null;
+    if(!last || last.id!==d.id){
+      ttl='⚠️ جهاز جديد يفتح اللوحة';
+      ln='🆕 أول مرة يفتح هذا الجهاز لوحة التحكم — إذا مو أنت، غيّر كلمة مرور الأدمن فوراً';
+    }else if(ip && last.ip && last.ip!==ip){
+      ttl='🔁 تغيّر عنوان الإنترنت';
+      ln='IP جديد: <code>'+esc(ip)+'</code> — كان <code>'+esc(last.ip)+'</code>';
+    }
+    if(!ttl) return;
+    gps().then(function(pp){
+      TG.send('🚨 <b>تنبيه أمني — لوحة MedLab Pro</b>\n➖➖➖➖➖➖➖➖➖➖\n📌 <b>'+ttl+'</b>\n\n• '+ln+
+              '\n\n👤 '+esc(who())+'\n🕐 '+nowStr()+
+              '\n➖➖➖➖➖➖➖➖➖➖\n'+srcBlock(g, pp)).catch(function(){});
+    });
+  }).catch(function(){});
+}, 3200);
+
 /* ════════ واجهة الإعدادات ════════ */
 function tog(id,on){ var e=$(id); if(e) e.classList[on?'add':'remove']('on'); }
 function togOn(id){ var e=$(id); return !!(e && e.classList.contains('on')); }
@@ -2943,7 +3062,7 @@ window.mlpTgOpen=function(){
   if($('mlp-tg-proxy')) $('mlp-tg-proxy').value=c.proxy||'';
   if($('mlp-tg-label')) $('mlp-tg-label').value=c.label||'';
   if($('mlp-tg-level')) $('mlp-tg-level').value=c.level||'all';
-  tog('mlp-tg-on', c.on); tog('mlp-tg-open', c.onOpen);
+  tog('mlp-tg-on', c.on); tog('mlp-tg-open', c.onOpen); tog('mlp-tg-gps', c.gps);
   paintState(); TG.refreshQueueBox();
   try{ openModal('m-mlp-tg'); }catch(e){}
 };
@@ -2962,7 +3081,7 @@ window.mlpTgSave=function(){
   c.proxy=($('mlp-tg-proxy').value||'').trim();
   c.label=($('mlp-tg-label').value||'').trim();
   c.level=$('mlp-tg-level').value||'all';
-  c.on=togOn('mlp-tg-on'); c.onOpen=togOn('mlp-tg-open');
+  c.on=togOn('mlp-tg-on'); c.onOpen=togOn('mlp-tg-open'); c.gps=togOn('mlp-tg-gps');
   TG.save(); paintState();
   if(c.on && !c.chat){ say('ناقص Chat ID','دز /start للبوت واضغط زر «جلب»','warning'); return; }
   if(c.on && !c.token && !c.proxy){ say('ناقص التوكن','الصق توكن البوت من BotFather','warning'); return; }
@@ -2975,7 +3094,10 @@ window.mlpTgTest=function(){
   c.chat =($('mlp-tg-chat').value||'').trim();
   c.proxy=($('mlp-tg-proxy').value||'').trim();
   var wasOn=c.on; c.on=true;
-  TG.send('🛡️ <b>لوحة تحكم MedLab Pro</b>\n➖➖➖➖➖➖➖➖➖➖\n📌 <b>رسالة تجريبية</b>\n\n• ✅ الربط شغّال، بيوصلك إشعار بكل تغيير\n\n👤 '+esc(who())+'\n💻 '+esc(device())+'\n🕐 '+nowStr())
+  c.gps=togOn('mlp-tg-gps');
+  Promise.all([geo(), gps()]).then(function(r){
+    return TG.send('🛡️ <b>لوحة تحكم MedLab Pro</b>\n➖➖➖➖➖➖➖➖➖➖\n📌 <b>رسالة تجريبية</b>\n\n• ✅ الربط شغّال، بيوصلك إشعار بكل تغيير\n\n👤 '+esc(who())+'\n🕐 '+nowStr()+'\n➖➖➖➖➖➖➖➖➖➖\n'+srcBlock(r[0], r[1]));
+  })
     .then(function(){ c.on=wasOn; TG.save(); say('✅ انرسلت','شوف تيليغرام','success'); })
     .catch(function(e){ c.on=wasOn; say('❌ ما انرسلت', (e&&e.message)||'تأكد من التوكن و Chat ID','error'); });
 };

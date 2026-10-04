@@ -688,7 +688,7 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
     <button class="tab-btn" onclick="switchTab('monitor')" id="tab-monitor">🖥️ المراقبة</button>
     <button class="tab-btn" onclick="switchTab('messages')" id="tab-messages">💬 الرسائل والنسخ</button>
     <button class="tab-btn" onclick="switchTab('sidelab')" id="tab-sidelab">🧪 سايد لاب</button>
-    <button class="tab-btn" onclick="switchTab('vendors')" id="tab-vendors">🏬 المورّدون</button>
+    <button class="tab-btn" onclick="switchTab('accounts')" id="tab-accounts">💼 الحسابات</button>
     <button class="tab-btn" onclick="switchTab('promos')" id="tab-promos">📣 الإعلانات</button>
     <button class="tab-btn" onclick="switchTab('firebase')" id="tab-firebase">🔧 Firebase</button>
   </div>
@@ -961,66 +961,8 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
     </div>
   </div>
 
-  <div class="tab-pane" id="pane-vendors">
-
-    <div class="card" style="border-color:rgba(0,255,157,.35)">
-      <div class="card-hdr">
-        <div class="card-title">🏬 المورّدون — متجر التجهيزات المختبرية</div>
-        <button class="btn btn-sm" style="background:rgba(0,212,255,.1);color:var(--primary);border:1px solid rgba(0,212,255,.35)" onclick="vdLoad()">🔄 تحديث</button>
-      </div>
-
-      <div style="background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);border-radius:10px;padding:11px 13px;font-size:11.5px;color:var(--text2);line-height:1.9;margin-bottom:16px">
-        • الحساب المُنشأ هنا يدخل على <b>لوحة المورّد</b> ويضيف منتجاته وأسعاره.<br>
-        • المنتجات تظهر تلقائياً في متجر MedLab Pro لكل المختبرات.<br>
-        • عند <b>الإيقاف</b> يختفي المتجر من البرنامج ولا يستطيع المورّد الدخول.
-      </div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-        <div style="flex:1;min-width:110px;background:rgba(0,245,147,.07);border:1px solid rgba(0,245,147,.25);border-radius:10px;padding:10px 12px">
-          <div style="font-size:19px;font-weight:900;color:var(--success)" id="vd-c-on">0</div>
-          <div style="font-size:10px;color:var(--text2)">✅ مفعّل</div>
-        </div>
-        <div style="flex:1;min-width:110px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px">
-          <div style="font-size:19px;font-weight:900;color:var(--text2)" id="vd-c-off">0</div>
-          <div style="font-size:10px;color:var(--text2)">🚫 موقوف</div>
-        </div>
-        <div style="flex:1;min-width:110px;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:10px 12px">
-          <div style="font-size:19px;font-weight:900;color:var(--primary)" id="vd-c-p">0</div>
-          <div style="font-size:10px;color:var(--text2)">📦 إجمالي المنتجات</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-hdr"><div class="card-title">➕ إنشاء حساب مورّد</div></div>
-      <div class="fr2">
-        <div class="fg"><label class="fl">اسم الشركة / المتجر <span class="req">*</span></label>
-          <input class="fc" id="vd-name" placeholder="شركة النخبة للتجهيزات المختبرية"></div>
-        <div class="fg"><label class="fl">المحافظة <span class="req">*</span></label>
-          <select class="fc" id="vd-gov"></select></div>
-      </div>
-      <div class="fr2">
-        <div class="fg"><label class="fl">اسم المستخدم <span class="req">*</span> <span style="font-size:10px;color:var(--text2)">(أحرف إنجليزية صغيرة)</span></label>
-          <input class="fc" id="vd-user" placeholder="nukhba"></div>
-        <div class="fg"><label class="fl">كلمة المرور <span class="req">*</span> <span style="font-size:10px;color:var(--text2)">(٤ خانات فأكثر)</span></label>
-          <input class="fc" id="vd-pass" placeholder="123456"></div>
-      </div>
-      <div class="fr2">
-        <div class="fg"><label class="fl">رقم الهاتف</label><input class="fc" id="vd-phone" placeholder="07XXXXXXXXX"></div>
-        <div class="fg"><label class="fl">رقم واتساب</label><input class="fc" id="vd-wa" placeholder="07XXXXXXXXX"></div>
-      </div>
-      <div id="vd-err" style="display:none;background:rgba(255,34,68,.1);border:1px solid rgba(255,34,68,.3);color:var(--danger);border-radius:9px;padding:9px 12px;font-size:12px;font-weight:700;margin-bottom:12px"></div>
-      <button class="btn btn-p" onclick="vdCreate()">إنشاء الحساب</button>
-    </div>
-
-    <div class="card">
-      <div class="card-hdr"><div class="card-title">📋 قائمة المورّدين</div></div>
-      <div class="fg" style="margin-bottom:12px">
-        <input class="fc" id="vd-search" placeholder="🔍 بحث بالاسم أو اليوزر أو المحافظة..." oninput="vdRender()">
-      </div>
-      <div id="vd-list"></div>
-    </div>
-  </div>
+  <!-- 💼 الحسابات — مبيعات متجر ميدلاب هوم وعمولة كل حساب -->
+  <div class="tab-pane" id="pane-accounts"><div id="ac-root"></div></div>
 
   <!-- ══════════════════════════════════════════
        TAB — 📣 الإعلانات (شرائح لوحة التحكم في البرنامج)
@@ -1566,7 +1508,7 @@ function switchTab(name){
     loadLoginLog();
   }
   if(name==='sidelab') slLoad();
-  if(name==='vendors') vdLoad();
+  if(name==='accounts' && window.acLoad) acLoad();
   if(name==='promos') pzaLoad();
 }
 
@@ -2728,173 +2670,6 @@ setTimeout(boot,1500);
 })();
 
 
-// ═══════════════════════════════════════════════════
-// VENDORS — متجر التجهيزات المختبرية
-// store/vendors/{vid}  = بيانات المتجر العامة (يقرأها MedLab Pro)
-// store/auth/{vid}     = اليوزر + هاش كلمة المرور (.read:false)
-// ═══════════════════════════════════════════════════
-var VD_GOVS=['بغداد','البصرة','نينوى','أربيل','السليمانية','دهوك','كركوك','النجف','كربلاء',
-             'بابل','الأنبار','ديالى','ذي قار','المثنى','القادسية','ميسان','واسط','صلاح الدين'];
-var _vd={};
-
-function vdEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
-  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-
-/* نفس الصيغة المستخدمة في لوحة المورّد: SHA-256(كلمة المرور + "|" + vid) */
-function vdHash(pw,vid){
-  var b=new TextEncoder().encode(pw+'|'+vid);
-  return crypto.subtle.digest('SHA-256',b).then(function(h){
-    return Array.prototype.map.call(new Uint8Array(h),function(x){
-      return x.toString(16).padStart(2,'0'); }).join('');
-  });
-}
-
-function vdRid(n){
-  var c='abcdefghijklmnopqrstuvwxyz0123456789',s='';
-  var a=new Uint32Array(n); crypto.getRandomValues(a);
-  for(var i=0;i<n;i++) s+=c[a[i]%c.length];
-  return s;
-}
-
-function vdFillGov(){
-  var g=document.getElementById('vd-gov');
-  if(!g||g.options.length) return;
-  VD_GOVS.forEach(function(x){ g.insertAdjacentHTML('beforeend','<option>'+x+'</option>'); });
-}
-
-function vdLoad(){
-  vdFillGov();
-  if(!(fbReady&&fbDb)){ showNotif('خطأ','لا يوجد اتصال بـ Firebase','error'); return; }
-  fbDb.ref('store/vendors').on('value',function(s){ _vd=s.val()||{}; vdRender(); });
-}
-
-function vdRender(){
-  var q=(document.getElementById('vd-search')||{value:''}).value.trim().toLowerCase();
-  var el=document.getElementById('vd-list'); if(!el) return;
-  var on=0,off=0,np=0,rows=[];
-
-  for(var vid in _vd){
-    var v=_vd[vid]||{};
-    if(v.active===false) off++; else on++;
-    np += (v.nP||0);
-    var hay=((v.name||'')+' '+(v.u||'')+' '+(v.gov||'')).toLowerCase();
-    if(q && hay.indexOf(q)<0) continue;
-    rows.push({vid:vid,v:v});
-  }
-
-  document.getElementById('vd-c-on').textContent=on;
-  document.getElementById('vd-c-off').textContent=off;
-  document.getElementById('vd-c-p').textContent=np;
-
-  if(!rows.length){
-    el.innerHTML='<div style="text-align:center;padding:34px;color:var(--text2);font-size:12.5px">'+
-      (Object.keys(_vd).length?'لا توجد نتائج مطابقة':'لم تُنشئ أي حساب مورّد بعد')+'</div>';
-    return;
-  }
-
-  rows.sort(function(a,b){ return (b.v.ts||0)-(a.v.ts||0); });
-
-  el.innerHTML=rows.map(function(r){
-    var v=r.v, act=v.active!==false;
-    return '<div style="background:var(--bg-glass);border:1px solid '+(act?'rgba(0,245,147,.28)':'rgba(255,255,255,.1)')+
-      ';border-radius:12px;padding:13px 15px;margin-bottom:10px">'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">'+
-        '<div style="min-width:0">'+
-          '<div style="font-size:13.5px;font-weight:800">'+vdEsc(v.name||'—')+'</div>'+
-          '<div style="font-size:11px;color:var(--text2);margin-top:3px">'+
-            '👤 '+vdEsc(v.u||'—')+' • 📍 '+vdEsc(v.gov||'—')+
-            (v.phone?' • ☎ '+vdEsc(v.phone):'')+'</div>'+
-          '<div style="font-size:10.5px;color:var(--text2);margin-top:3px">📦 '+(v.nP||0)+' منتج'+
-            (v.tg?' • 📨 تيليغرام مفعّل':'')+'</div>'+
-        '</div>'+
-        '<span style="padding:4px 11px;border-radius:20px;font-size:10.5px;font-weight:800;'+
-          (act?'background:rgba(0,245,147,.13);color:var(--success);border:1px solid rgba(0,245,147,.3)'
-              :'background:rgba(255,34,68,.13);color:var(--danger);border:1px solid rgba(255,34,68,.3)')+'">'+
-          (act?'مفعّل':'موقوف')+'</span>'+
-      '</div>'+
-      '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px">'+
-        '<button class="btn btn-sm" onclick="vdToggle(\''+r.vid+'\')">'+(act?'🚫 إيقاف':'✅ تفعيل')+'</button>'+
-        '<button class="btn btn-sm" onclick="vdResetPw(\''+r.vid+'\')">🔑 كلمة مرور جديدة</button>'+
-        '<button class="btn btn-sm btn-d" onclick="vdDel(\''+r.vid+'\')">🗑 حذف</button>'+
-      '</div></div>';
-  }).join('');
-}
-
-function vdCreate(){
-  var name =(document.getElementById('vd-name').value||'').trim();
-  var gov  = document.getElementById('vd-gov').value;
-  var user =(document.getElementById('vd-user').value||'').trim().toLowerCase();
-  var pass =(document.getElementById('vd-pass').value||'').trim();
-  var phone=(document.getElementById('vd-phone').value||'').trim();
-  var wa   =(document.getElementById('vd-wa').value||'').trim();
-  var err  = document.getElementById('vd-err');
-  function bad(m){ err.textContent='❌ '+m; err.style.display='block'; }
-
-  if(!name)                    return bad('أدخل اسم الشركة');
-  if(!/^[a-z][a-z0-9]{2,}$/.test(user)) return bad('اسم المستخدم: أحرف إنجليزية صغيرة وأرقام، ٣ خانات فأكثر');
-  if(pass.length<4)            return bad('كلمة المرور: ٤ خانات فأكثر');
-  if(!(fbReady&&fbDb))         return bad('لا يوجد اتصال بـ Firebase');
-  for(var k in _vd) if(String(_vd[k].u||'').toLowerCase()===user)
-    return bad('اسم المستخدم مستخدم مسبقاً');
-  err.style.display='none';
-
-  var vid='v'+vdRid(11);
-  vdHash(pass,vid).then(function(h){
-    return fbDb.ref('store/vendors/'+vid).set({
-      u:user, name:name, gov:gov, city:'', phone:phone, wa:wa, about:'',
-      active:true, ver:Date.now(), nP:0, tg:'', ts:Date.now()
-    }).then(function(){
-      return fbDb.ref('store/auth/'+vid).set({ u:user, k:h });
-    });
-  }).then(function(){
-    ['vd-name','vd-user','vd-pass','vd-phone','vd-wa'].forEach(function(id){
-      document.getElementById(id).value=''; });
-    showNotif('✅ تم','تم إنشاء حساب المورّد: '+user+' — يستطيع الدخول على لوحة المورّد الآن','success');
-  }).catch(function(e){
-    console.error(e);
-    bad('تعذّر الإنشاء — تأكد من تحديث قواعد Firebase');
-  });
-}
-
-function vdToggle(vid){
-  var v=_vd[vid]; if(!v) return;
-  var nx = v.active===false;
-  if(!confirm((nx?'تفعيل':'إيقاف')+' متجر "'+(v.name||'')+'"؟')) return;
-  fbDb.ref('store/vendors/'+vid).update({ active:nx, ver:Date.now() }).then(function(){
-    if(!nx) fbDb.ref('store/sess/'+vid).remove().catch(function(){});
-    showNotif('تم', nx?'تم تفعيل المتجر':'تم إيقاف المتجر','success');
-  }).catch(function(){ showNotif('خطأ','تعذّر التحديث','error'); });
-}
-
-function vdResetPw(vid){
-  var v=_vd[vid]; if(!v) return;
-  var np=prompt('كلمة المرور الجديدة للمورّد "'+(v.name||'')+'" (٤ خانات فأكثر):');
-  if(np===null) return;
-  np=String(np).trim();
-  if(np.length<4){ showNotif('خطأ','كلمة المرور قصيرة','error'); return; }
-  vdHash(np,vid).then(function(h){
-    return fbDb.ref('store/auth/'+vid).set({ u:v.u||'', k:h });
-  }).then(function(){
-    fbDb.ref('store/sess/'+vid).remove().catch(function(){});
-    showNotif('✅ تم','كلمة المرور الجديدة لـ '+(v.u||'')+' هي: '+np,'success');
-  }).catch(function(){ showNotif('خطأ','تعذّر التغيير','error'); });
-}
-
-function vdDel(vid){
-  var v=_vd[vid]; if(!v) return;
-  if(!confirm('حذف متجر "'+(v.name||'')+'" نهائياً مع كل منتجاته وطلباته؟')) return;
-  if(!confirm('تأكيد أخير — لا يمكن التراجع.')) return;
-  Promise.all([
-    fbDb.ref('store/vendors/'+vid).remove(),
-    fbDb.ref('store/auth/'+vid).remove(),
-    fbDb.ref('store/sess/'+vid).remove(),
-    fbDb.ref('store/cat/'+vid).remove(),
-    fbDb.ref('store/img/'+vid).remove(),
-    fbDb.ref('store/orders/'+vid).remove()
-  ]).then(function(){
-    showNotif('تم','تم حذف المورّد وكل بياناته','success');
-  }).catch(function(){ showNotif('خطأ','تعذّر الحذف بالكامل','error'); });
-}
 
 </script>
 
@@ -4431,6 +4206,355 @@ function pzaCanWriteQuiet(){
   if(typeof fbIsAdmin!=='undefined' && !fbIsAdmin){ showNotif('خطأ','اللوحة بوضع القراءة فقط — أعد إدخال كلمة مرور الأدمن','error'); return false; }
   return true;
 }
+</script>
+<!-- ═══════ 💼 الحسابات (متجر ميدلاب هوم) ═══════ -->
+<style>
+/* ══════ 💼 الحسابات ══════ */
+#ac-root .ac-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+#ac-root .ac-sc{background:var(--bg-card);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px}
+#ac-root .ac-sct{font-size:11px;color:var(--text2);font-weight:700}
+#ac-root .ac-scv{font-size:19px;font-weight:800;margin-top:4px}
+#ac-root .ac-scs{font-size:11px;color:var(--text2);margin-top:2px}
+#ac-root .ac-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+#ac-root .ac-chip{padding:6px 13px;border-radius:99px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-weight:700;font-size:11.5px;cursor:pointer;font-family:inherit}
+#ac-root .ac-chip.on{background:var(--primary);color:#000;border-color:var(--primary)}
+#ac-root .ac-scroll{overflow:auto;max-height:65vh}
+#ac-root table.ac-t{width:100%;border-collapse:collapse;font-size:12px}
+#ac-root table.ac-t th{text-align:right;padding:9px 8px;border-bottom:2px solid var(--border);color:var(--text2);font-weight:800;white-space:nowrap;position:sticky;top:0;background:var(--bg-card);z-index:1}
+#ac-root table.ac-t td{padding:8px;border-bottom:1px solid var(--border);vertical-align:top}
+#ac-root tr.ac-dim td{opacity:.55}
+#ac-root .ac-muted{color:var(--text2);font-size:11px}
+#ac-root .ac-code{font-family:Consolas,monospace;font-weight:800;letter-spacing:2px;color:var(--primary)}
+#ac-root .ac-pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800;background:rgba(0,212,255,.12);color:var(--primary)}
+#ac-root .ac-pill.ok{background:rgba(0,200,83,.15);color:#00c853}
+#ac-root .ac-pill.bad{background:rgba(255,77,109,.15);color:var(--danger)}
+#ac-root .ac-pill.warn{background:rgba(255,214,10,.15);color:var(--warning)}
+#ac-root .ac-warn-s{color:var(--warning);font-size:10.5px;font-weight:700}
+#ac-root .ac-btn-d{border-color:var(--danger)!important;color:var(--danger)!important}
+#ac-root .ac-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+#ac-root .ac-row>.fg{flex:1;min-width:160px}
+#ac-root .ac-kv{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:6px 14px;font-size:12px}
+#ac-root .ac-kv>span:nth-child(4n+1),#ac-root .ac-kv>span:nth-child(4n+3){color:var(--text2)}
+#ac-root .ac-note{background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:11px 13px;font-size:12px;color:var(--text2);margin-bottom:14px}
+#ac-root .ac-warn{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.35);border-radius:10px;padding:9px 12px;font-size:12px;margin-bottom:12px}
+#ac-root .ac-empty{text-align:center;padding:30px;color:var(--text2)}
+#ac-root .ac-empty b{display:block;color:var(--text);font-size:14px;margin-bottom:6px}
+@media(max-width:800px){#ac-root .ac-kv{grid-template-columns:auto 1fr}}
+</style>
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   💼 الحسابات — مبيعات متجر «ميدلاب هوم» وعمولة كل حساب
+   ──────────────────────────────────────────────────────────────────────
+   • اتصال ثانٍ مستقل بمشروع المتجر (medlab-65ddb) باسم 'mlstore-admin'
+     بحساب الأدمن الحقيقي (Email/Password) — لا يمسّ اتصال rescuse.
+   • الربط: reg/{sid}.acct = اسم حساب ميدلاب = مفتاح admin/users.
+   • المصدر الوحيد للمبيعات: led/{sid}/{oid} (يكتبه هاتف المراجع مع الطلب،
+     والمختبر لا يستطيع حذفه ولا تغيير عدد تحاليله).
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+var CFG = {
+  apiKey: 'AIzaSyA49javA3VuEAqXh3kTX2usZ3ubTyn8vMg',
+  authDomain: 'medlab-65ddb.firebaseapp.com',
+  databaseURL: 'https://medlab-65ddb-default-rtdb.europe-west1.firebasedatabase.app',
+  projectId: 'medlab-65ddb',
+  appId: '1:533644343362:web:0bb912e32c881075b515db'
+};
+var PW_KEY = 'mlp_adm_pw_store';
+var A = { app:null, db:null, ok:false, err:'', data:null, users:{}, view:'list', sid:null, q:'', f:'all',
+          from:'', to:'', loading:false, cur:'د.ع' };
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function fmt(n){ return (Math.round(+n||0)).toLocaleString('en-US'); }
+function money(n){ return '<b dir="ltr">'+fmt(n)+'</b> <small style="opacity:.75">'+A.cur+'</small>'; }
+function say(t,m,k){ try{ showNotif(t,m,k||'info'); }catch(e){ console.log(t,m); } }
+function root(){ return document.getElementById('ac-root'); }
+function day0(t){ var d=new Date(t); return new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime(); }
+function ymd(t){ var d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function shortNo(oid){ return String(oid||'').slice(-6).toUpperCase(); }
+function TS(){ return firebase.database.ServerValue.TIMESTAMP; }
+function rateOf(sid){ var c=(A.data&&A.data.ctl[sid])||{}; return typeof c.rate==='number'?c.rate:1000; }
+function adminEmail(){ try{ return ADMIN_EMAIL; }catch(e){ return 'saif@medlabpro.local'; } }
+
+/* ───────── الاتصال والدخول ───────── */
+async function connect(pw){
+  var ok=await loadFirebase(); if(!ok || typeof firebase==='undefined') throw new Error('تعذّر تحميل Firebase — تحقّق من الإنترنت');
+  if(!A.app) A.app=firebase.apps.find(function(a){return a.name==='mlstore-admin';}) || firebase.initializeApp(CFG,'mlstore-admin');
+  var auth=A.app.auth();
+  if(!auth.currentUser || auth.currentUser.isAnonymous){
+    var p=pw||sessionStorage.getItem(PW_KEY)||sessionStorage.getItem('mlp_adm_pw')||'';
+    if(!p) throw Object.assign(new Error('need-pw'),{needPw:true});
+    try{ await auth.signInWithEmailAndPassword(adminEmail(), p); }
+    catch(e){ sessionStorage.removeItem(PW_KEY); throw Object.assign(new Error('كلمة مرور حساب الأدمن في مشروع المتجر غير صحيحة، أو الحساب غير موجود فيه'),{needPw:true}); }
+    try{ sessionStorage.setItem(PW_KEY,p); }catch(e){}
+  }
+  A.db=A.app.database(); A.ok=true;
+}
+async function loadAll(){
+  A.loading=true; render();
+  try{
+    await connect();
+    var r=await Promise.all([A.db.ref('reg').once('value'), A.db.ref('ctl').once('value'), A.db.ref('pay').once('value'), A.db.ref('led').once('value'),
+      fbDb ? fbDb.ref('admin/users').once('value') : Promise.resolve({val:function(){return {};}})]);
+    A.data={ reg:r[0].val()||{}, ctl:r[1].val()||{}, pay:r[2].val()||{}, led:r[3].val()||{}, at:Date.now() };
+    A.users=r[4].val()||{};
+    A.err='';
+    await autoSuspend();
+  }catch(e){
+    A.data=null;
+    if(e && e.needPw) A.err='need-pw';
+    else if(e && (e.code==='PERMISSION_DENIED' || /permission/i.test(e.message||''))) A.err='not-admin';
+    else A.err=(e&&e.message)||'خطأ في الاتصال';
+  }finally{ A.loading=false; render(); }
+}
+
+/* ───────── الحسابات ───────── */
+function statsFor(sid, from, to){
+  var L=(A.data.led[sid])||{}, s={orders:0,acc:0,rej:0,can:0,pend:0,tests:0,com:0,last:0,list:[]};
+  Object.keys(L).forEach(function(oid){
+    var e=L[oid]; if(!e) return; var t=e.st==='acc'?(e.at||e.ts):e.ts;
+    if(from!=null && (t<from || t>=to)) return;
+    s.orders++; if(e.ts>s.last) s.last=e.ts;
+    var r=typeof e.r==='number'?e.r:rateOf(sid), cm=e.st==='acc'?(+e.n||0)*r:0;
+    if(e.st==='acc'){ s.acc++; s.tests+=(+e.n||0); s.com+=cm; } else if(e.st==='rej') s.rej++; else if(e.st==='can') s.can++; else s.pend++;
+    s.list.push({oid:oid, t:t, ts:e.ts, n:+e.n||0, r:r, cm:cm, st:e.st});
+  });
+  return s;
+}
+function paidFor(sid){ var P=(A.data.pay[sid])||{}, sum=0, list=[]; Object.keys(P).forEach(function(k){ var p=P[k]; if(!p) return; sum+=(+p.amt||0); list.push(Object.assign({id:k},p)); }); list.sort(function(a,b){return b.ts-a.ts;}); return {sum:sum,list:list}; }
+function balanceFor(sid){ return statsFor(sid).com - paidFor(sid).sum; }
+function rows(){
+  var now=Date.now(), d0=day0(now), dt=new Date(now), m0=new Date(dt.getFullYear(),dt.getMonth(),1).getTime(), y0=new Date(dt.getFullYear(),0,1).getTime(), END=now+864e5;
+  var out=[], bySid={};
+  Object.keys(A.data.reg).forEach(function(sid){
+    var g=A.data.reg[sid]||{}, u=A.users[g.acct]||null, c=A.data.ctl[sid]||{};
+    var all=statsFor(sid), p=paidFor(sid);
+    var row={ sid:sid, acct:g.acct||'', labName:(u&&u.labName)||g.nm||'', code:g.code||'', storeNm:g.nm||'', user:u, ctl:c,
+      d:statsFor(sid,d0,END), m:statsFor(sid,m0,END), y:statsFor(sid,y0,END), all:all, paid:p.sum, bal:all.com-p.sum,
+      rejRate: all.orders? Math.round(all.rej/all.orders*100):0 };
+    out.push(row); bySid[g.acct]=1;
+  });
+  Object.keys(A.users).forEach(function(un){ if(un==='saif' || bySid[un]) return; var u=A.users[un]||{}; out.push({sid:null, acct:un, labName:u.labName||'', user:u, ctl:{}}); });
+  return out;
+}
+
+/* ───────── الإيقاف التلقائي ───────── */
+async function autoSuspend(){
+  var hits=[];
+  for(var sid in A.data.ctl){ var c=A.data.ctl[sid]||{};
+    if(!c.auto || !(c.lim>0) || c.off) continue;
+    var b=balanceFor(sid);
+    if(b>c.lim){ try{ var why='تجاوز المستحقات الحد المسموح ('+fmt(c.lim)+')'; await A.db.ref('ctl/'+sid).update({off:true, why:why, ts:Date.now()}); c.off=true; c.why=why; hits.push(((A.data.reg[sid]||{}).acct)||sid); }catch(e){} }
+  }
+  if(hits.length) say('⛔ إيقاف تلقائي','تم إيقاف متجر: '+hits.join('، ')+' لتجاوز حد المستحقات','warning');
+}
+async function setOff(sid, off, why){
+  try{
+    var u={off:!!off, ts:Date.now()}; if(off) u.why=String(why||'').slice(0,200); else u.why='';
+    await A.db.ref('ctl/'+sid).update(u);
+    A.data.ctl[sid]=Object.assign({},A.data.ctl[sid]||{},u);
+    say(off?'تم الإيقاف':'تم التشغيل', off?'لن يستقبل هذا المتجر طلبات جديدة':'عاد المتجر لاستقبال الطلبات', off?'warning':'success');
+    render();
+  }catch(e){ say('خطأ','تعذّر التحديث — تأكّد من صلاحية الأدمن','error'); }
+}
+
+/* ═══════════════ الواجهة ═══════════════ */
+function render(){
+  var r=root(); if(!r) return;
+  if(A.loading && !A.data){ r.innerHTML='<div class="card"><div class="ac-empty">⏳ جاري تحميل الحسابات…</div></div>'; return; }
+  if(A.err==='need-pw') { r.innerHTML=pwHtml(''); return; }
+  if(A.err==='not-admin'){ r.innerHTML=notAdminHtml(); return; }
+  if(A.err){ r.innerHTML='<div class="card"><div class="ac-empty"><b>تعذّر التحميل</b>'+esc(A.err)+'<br><br><button class="btn btn-p btn-sm" data-ac="reload">🔄 إعادة المحاولة</button></div></div>'; return; }
+  if(!A.data){ r.innerHTML=''; return; }
+  r.innerHTML = A.view==='detail' && A.sid ? detailHtml(A.sid) : listHtml();
+  if(A.view==='detail') drawChart();
+}
+function pwHtml(msg){
+  return '<div class="card" style="max-width:520px"><div class="card-hdr"><div class="card-title">🔐 دخول مشروع المتجر</div></div>'+
+    '<div class="ac-note">أدخل كلمة مرور حساب الأدمن <b dir="ltr">'+esc(adminEmail())+'</b> في مشروع المتجر <b dir="ltr">medlab-65ddb</b>. تُحفظ للجلسة الحالية فقط.</div>'+
+    (msg?'<div class="ac-warn">'+esc(msg)+'</div>':'')+
+    '<div class="fg"><input class="fc" type="password" id="ac-pw" placeholder="كلمة المرور" autocomplete="current-password"></div>'+
+    '<button class="btn btn-p" data-ac="login">دخول</button></div>';
+}
+function notAdminHtml(){
+  var uid=''; try{ uid=A.app.auth().currentUser.uid; }catch(e){}
+  return '<div class="card" style="max-width:640px"><div class="card-hdr"><div class="card-title">⚠️ حسابك ليس مسجلاً كأدمن في مشروع المتجر</div></div>'+
+    '<div class="ac-note" style="line-height:2">مرة واحدة فقط: افتح Firebase Console ← مشروع <b dir="ltr">medlab-65ddb</b> ← Realtime Database ← Data، وأضف:<br>'+
+    '<code dir="ltr" style="display:block;background:rgba(0,0,0,.3);padding:8px 10px;border-radius:8px;margin:6px 0">admins / '+esc(uid)+' : true</code>'+
+    '(القيمة <b>true</b> من نوع Boolean). ثم اضغط إعادة المحاولة.</div>'+
+    '<button class="btn btn-sm" data-ac="copyuid" data-v="'+esc(uid)+'">📋 نسخ المعرّف</button> <button class="btn btn-p btn-sm" data-ac="reload">🔄 إعادة المحاولة</button></div>';
+}
+function listHtml(){
+  var all=rows(), q=A.q.trim().toLowerCase();
+  var T={d:0,m:0,y:0,bal:0,act:0,off:0,tm:0};
+  all.forEach(function(r){ if(!r.sid) return; T.d+=r.d.com; T.m+=r.m.com; T.y+=r.y.com; T.tm+=r.m.tests; if(r.bal>0) T.bal+=r.bal; if(r.ctl.off) T.off++; else T.act++; });
+  var list=all.filter(function(r){
+    if(q && (r.acct+' '+r.labName+' '+(r.code||'')).toLowerCase().indexOf(q)<0) return false;
+    if(A.f==='store') return !!r.sid; if(A.f==='nostore') return !r.sid; if(A.f==='off') return r.sid && r.ctl.off; if(A.f==='owe') return r.sid && r.bal>0;
+    return true; });
+  list.sort(function(a,b){ if(!!a.sid!==!!b.sid) return a.sid?-1:1; return (b.bal||0)-(a.bal||0); });
+  function sc(t,v,s,col){ return '<div class="ac-sc"><div class="ac-sct">'+t+'</div><div class="ac-scv"'+(col?' style="color:'+col+'"':'')+'>'+v+'</div>'+(s?'<div class="ac-scs">'+s+'</div>':'')+'</div>'; }
+  return '<div class="ac-cards">'+sc('عمولة اليوم',money(T.d))+sc('عمولة الشهر',money(T.m),T.tm+' تحليل')+sc('عمولة السنة',money(T.y))+
+      sc('مستحقات غير مدفوعة',money(T.bal),'','var(--danger)')+sc('متاجر تعمل',T.act)+sc('متاجر موقوفة',T.off,'',T.off?'var(--danger)':'')+'</div>'+
+    '<div class="card"><div class="card-hdr"><div class="card-title">💼 الحسابات — مبيعات متجر ميدلاب هوم</div>'+
+      '<span><span class="ac-muted" style="font-size:11px">آخر تحديث '+new Date(A.data.at).toLocaleTimeString('ar-IQ')+'</span> <button class="btn btn-sm" data-ac="reload">🔄 تحديث</button></span></div>'+
+      '<div class="ac-bar"><input class="fc" style="max-width:280px" placeholder="🔍 اسم الحساب أو المختبر أو الكود" data-ac-in="q" value="'+esc(A.q)+'">'+
+        [['all','الكل'],['store','لديهم متجر'],['owe','عليهم مستحقات'],['off','موقوفة'],['nostore','بلا متجر']].map(function(x){return '<button class="ac-chip '+(A.f===x[0]?'on':'')+'" data-ac="f" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+'</div>'+
+      '<div class="ac-scroll"><table class="ac-t"><thead><tr><th>الحساب</th><th>المتجر</th><th>اليوم</th><th>هذا الشهر</th><th>هذه السنة</th><th>الرصيد المستحق</th><th>الرفض</th><th>آخر طلب</th><th></th></tr></thead><tbody>'+
+      (list.map(function(r){
+        var u=r.user, uOff=u&&(u.disabled||(u.expiry&&Date.now()>u.expiry));
+        var acct='<b>'+esc(r.acct||'—')+'</b>'+(r.labName?'<div class="ac-muted">🏥 '+esc(r.labName)+'</div>':'')+(!u&&r.sid?'<div class="ac-warn-s">⚠️ الحساب غير موجود في المستخدمين</div>':'')+(uOff?'<div class="ac-warn-s">اشتراك ميدلاب منتهٍ/معطّل</div>':'');
+        if(!r.sid) return '<tr class="ac-dim"><td>'+acct+'</td><td colspan="8" class="ac-muted">لم يفعّل المتجر بعد</td></tr>';
+        var st=r.ctl.off?'<span class="ac-pill bad">⛔ موقوف</span>':'<span class="ac-pill ok">يعمل</span>';
+        function cell(s){ return s.tests?'<b>'+fmt(s.com)+'</b><div class="ac-muted">'+s.tests+' تحليل · '+s.acc+' طلب</div>':'<span class="ac-muted">—</span>'; }
+        return '<tr><td>'+acct+'</td><td><span dir="ltr" class="ac-code">'+esc(r.code)+'</span><br>'+st+'</td><td>'+cell(r.d)+'</td><td>'+cell(r.m)+'</td><td>'+cell(r.y)+'</td>'+
+          '<td><b style="color:'+(r.bal>0?'var(--danger)':'var(--success,#00c853)')+'">'+fmt(r.bal)+'</b>'+(r.ctl.lim?'<div class="ac-muted">الحد '+fmt(r.ctl.lim)+(r.ctl.auto?' · تلقائي':'')+'</div>':'')+'</td>'+
+          '<td'+(r.rejRate>=30&&r.all.orders>=5?' style="color:var(--danger);font-weight:800"':'')+'>'+r.rejRate+'%</td>'+
+          '<td class="ac-muted">'+(r.all.last?new Date(r.all.last).toLocaleDateString('ar-IQ'):'—')+(r.all.pend?'<div style="color:var(--warning)">'+r.all.pend+' بانتظار القبول</div>':'')+'</td>'+
+          '<td style="white-space:nowrap"><button class="btn btn-p btn-sm" data-ac="open" data-v="'+esc(r.sid)+'">التفاصيل</button> '+
+            (r.ctl.off?'<button class="btn btn-sm" data-ac="on" data-v="'+esc(r.sid)+'">▶️ تشغيل</button>':'<button class="btn btn-sm ac-btn-d" data-ac="off" data-v="'+esc(r.sid)+'">⛔ إيقاف</button>')+'</td></tr>';
+      }).join('')||'<tr><td colspan="9" class="ac-empty">لا توجد حسابات مطابقة</td></tr>')+
+      '</tbody></table></div></div>';
+}
+function rangeOf(){
+  var now=Date.now();
+  var f=A.from?new Date(A.from+'T00:00:00').getTime():new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
+  var t=A.to?new Date(A.to+'T00:00:00').getTime()+864e5:day0(now)+864e5;
+  return [f,t];
+}
+function detailHtml(sid){
+  var g=A.data.reg[sid]||{}, u=A.users[g.acct]||{}, c=A.data.ctl[sid]||{}, rg=rangeOf(), s=statsFor(sid,rg[0],rg[1]), all=statsFor(sid), p=paidFor(sid), bal=all.com-p.sum;
+  if(!A.from) A.from=ymd(rg[0]); if(!A.to) A.to=ymd(rg[1]-864e5);
+  s.list.sort(function(a,b){return b.ts-a.ts;});
+  var stName={acc:'مقبول',rej:'مرفوض',can:'ألغاه المراجع',new:'بانتظار القبول'}, stCls={acc:'ok',rej:'bad',can:'bad',new:'warn'};
+  function sc(t,v,sub,col){ return '<div class="ac-sc"><div class="ac-sct">'+t+'</div><div class="ac-scv"'+(col?' style="color:'+col+'"':'')+'>'+v+'</div>'+(sub?'<div class="ac-scs">'+sub+'</div>':'')+'</div>'; }
+  var presets=[['today','اليوم'],['yday','أمس'],['week','آخر 7 أيام'],['month','هذا الشهر'],['pmonth','الشهر الماضي'],['year','هذه السنة'],['all','الكل']];
+  return '<div style="margin-bottom:12px"><button class="btn btn-sm" data-ac="back">→ رجوع للحسابات</button></div>'+
+  '<div class="card"><div class="card-hdr"><div class="card-title">🏥 '+esc(u.labName||g.nm||g.acct)+' <span class="ac-muted" style="font-weight:600">— '+esc(g.acct)+'</span></div>'+
+    (c.off?'<span class="ac-pill bad">⛔ موقوف'+(c.why?' — '+esc(c.why):'')+'</span>':'<span class="ac-pill ok">المتجر يعمل</span>')+'</div>'+
+    '<div class="ac-kv"><span>كود المتجر</span><b dir="ltr" class="ac-code">'+esc(g.code)+'</b><span>اسم المتجر</span><span>'+esc(g.nm||'—')+'</span>'+
+      '<span>تاريخ التفعيل</span><span>'+(g.ts?new Date(g.ts).toLocaleDateString('ar-IQ'):'—')+'</span><span>اشتراك ميدلاب</span><span>'+(u.disabled?'معطّل':u.expiry?('حتى '+new Date(u.expiry).toLocaleDateString('ar-IQ')):(u.type?'دائم':'—'))+'</span>'+
+      '<span>المعرّف</span><span dir="ltr" class="ac-muted">'+esc(sid)+'</span><span>إجمالي الطلبات</span><span>'+all.orders+' (مقبول '+all.acc+' · مرفوض '+all.rej+' · ملغى '+all.can+' · معلّق '+all.pend+')</span></div></div>'+
+
+  '<div class="ac-cards">'+sc('إجمالي العمولة',money(all.com),all.tests+' تحليل')+sc('المدفوع',money(p.sum),p.list.length+' دفعة')+
+    sc('الرصيد المستحق',money(bal),'',bal>0?'var(--danger)':'var(--success,#00c853)')+sc('العمولة لكل تحليل',money(rateOf(sid)))+'</div>'+
+
+  '<div class="card"><div class="card-hdr"><div class="card-title">⚙️ التحكم</div></div><div class="ac-row">'+
+    '<div class="fg"><label class="fl">العمولة لكل تحليل</label><input class="fc" type="number" min="0" id="ac-rate" value="'+rateOf(sid)+'"></div>'+
+    '<div class="fg"><label class="fl">حد المستحقات (0 = بلا حد)</label><input class="fc" type="number" min="0" id="ac-lim" value="'+(+c.lim||0)+'"></div>'+
+    '<div class="fg"><label class="fl">&nbsp;</label><label style="display:flex;gap:6px;align-items:center;font-weight:700"><input type="checkbox" id="ac-auto"'+(c.auto?' checked':'')+'> إيقاف تلقائي عند تجاوز الحد</label></div>'+
+    '<div class="fg"><label class="fl">&nbsp;</label><button class="btn btn-p btn-sm" data-ac="savectl" data-v="'+esc(sid)+'">💾 حفظ</button></div></div>'+
+    '<div class="ac-row"><div class="fg" style="flex:3"><label class="fl">سبب الإيقاف (يظهر للمختبر)</label><input class="fc" id="ac-why" maxlength="200" value="'+esc(c.why||'')+'" placeholder="مثال: يرجى تسديد مستحقات الشهر الماضي"></div>'+
+    '<div class="fg"><label class="fl">&nbsp;</label>'+(c.off?'<button class="btn btn-p btn-sm" data-ac="on" data-v="'+esc(sid)+'">▶️ تشغيل المتجر</button>':'<button class="btn btn-sm ac-btn-d" data-ac="offwhy" data-v="'+esc(sid)+'">⛔ إيقاف المتجر</button>')+'</div></div>'+
+    '<div class="ac-muted" style="font-size:11px">تغيير العمولة يُطبَّق على الطلبات المقبولة من الآن فصاعداً فقط؛ كل طلب سابق محفوظة عمولته.</div></div>'+
+
+  '<div class="card"><div class="card-hdr"><div class="card-title">📊 المبيعات حسب الفترة</div><span><button class="btn btn-sm" data-ac="csv" data-v="'+esc(sid)+'">⬇️ CSV</button> <button class="btn btn-sm" data-ac="print" data-v="'+esc(sid)+'">🖨️ كشف حساب</button></span></div>'+
+    '<div class="ac-bar">'+presets.map(function(x){return '<button class="ac-chip" data-ac="pre" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+
+      '<span style="margin-right:auto;display:flex;gap:6px;align-items:center">من <input class="fc" type="date" style="width:150px" data-ac-in="from" value="'+esc(A.from)+'"> إلى <input class="fc" type="date" style="width:150px" data-ac-in="to" value="'+esc(A.to)+'"></span></div>'+
+    '<div class="ac-cards" style="margin-bottom:10px">'+sc('العمولة',money(s.com))+sc('التحاليل',s.tests)+sc('طلبات مقبولة',s.acc)+sc('مرفوضة / ملغاة',s.rej+' / '+s.can)+sc('بانتظار القبول',s.pend,'',s.pend?'var(--warning)':'')+'</div>'+
+    '<div id="ac-chart" style="height:170px;margin-bottom:12px"></div>'+
+    '<div class="ac-scroll" style="max-height:420px"><table class="ac-t"><thead><tr><th>التاريخ والوقت</th><th>رقم الطلب</th><th>التحاليل</th><th>العمولة/تحليل</th><th>العمولة</th><th>الحالة</th></tr></thead><tbody>'+
+      (s.list.map(function(e){return '<tr><td>'+new Date(e.t).toLocaleString('ar-IQ')+'</td><td dir="ltr">#'+shortNo(e.oid)+'</td><td>'+e.n+'</td><td>'+fmt(e.r)+'</td><td><b>'+(e.st==='acc'?fmt(e.cm):'—')+'</b></td><td><span class="ac-pill '+(stCls[e.st]||'')+'">'+(stName[e.st]||esc(e.st))+'</span></td></tr>';}).join('')||'<tr><td colspan="6" class="ac-empty">لا توجد طلبات في هذه الفترة</td></tr>')+
+    '</tbody></table></div></div>'+
+
+  '<div class="card"><div class="card-hdr"><div class="card-title">💵 الدفعات</div></div>'+
+    '<div class="ac-row"><div class="fg"><label class="fl">المبلغ</label><input class="fc" type="number" min="1" id="ac-amt" placeholder="'+(bal>0?bal:'')+'"></div>'+
+    '<div class="fg"><label class="fl">التاريخ</label><input class="fc" type="date" id="ac-pdate" value="'+ymd(Date.now())+'"></div>'+
+    '<div class="fg" style="flex:2"><label class="fl">ملاحظة</label><input class="fc" id="ac-pnote" maxlength="200" placeholder="نقداً / زين كاش / تحويل…"></div>'+
+    '<div class="fg"><label class="fl">&nbsp;</label><button class="btn btn-p btn-sm" data-ac="pay" data-v="'+esc(sid)+'">➕ تسجيل دفعة</button></div></div>'+
+    '<table class="ac-t"><thead><tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th><th></th></tr></thead><tbody>'+
+      (p.list.map(function(x){return '<tr><td>'+new Date(x.ts).toLocaleDateString('ar-IQ')+'</td><td><b>'+fmt(x.amt)+'</b></td><td>'+esc(x.nt||'')+'</td><td><button class="btn btn-sm ac-btn-d" data-ac="paydel" data-v="'+esc(sid)+'" data-p="'+esc(x.id)+'">حذف</button></td></tr>';}).join('')||'<tr><td colspan="4" class="ac-empty">لا توجد دفعات</td></tr>')+
+    '</tbody></table></div>';
+}
+function drawChart(){
+  var el=document.getElementById('ac-chart'); if(!el || !A.sid) return;
+  var rg=rangeOf(), days=Math.min(370,Math.max(1,Math.round((rg[1]-rg[0])/864e5))), s=statsFor(A.sid,rg[0],rg[1]);
+  var monthly=days>62, buckets={}, keys=[];
+  if(monthly){ var d=new Date(rg[0]); d=new Date(d.getFullYear(),d.getMonth(),1); while(d.getTime()<rg[1]){ var k=d.getFullYear()+'-'+(d.getMonth()+1); keys.push(k); buckets[k]=0; d=new Date(d.getFullYear(),d.getMonth()+1,1); } }
+  else for(var i=0;i<days;i++){ var k2=ymd(rg[0]+i*864e5); keys.push(k2); buckets[k2]=0; }
+  s.list.forEach(function(e){ if(e.st!=='acc') return; var dd=new Date(e.t), k=monthly?(dd.getFullYear()+'-'+(dd.getMonth()+1)):ymd(e.t); if(k in buckets) buckets[k]+=e.cm; });
+  var max=Math.max(1,Math.max.apply(null,keys.map(function(k){return buckets[k];}))), W=Math.max(el.clientWidth,300), H=170, bw=(W-20)/keys.length;
+  var bars=keys.map(function(k,i){ var h=Math.round((H-34)*buckets[k]/max); var x=W-10-(i+1)*bw;
+    return '<rect x="'+(x+bw*0.15)+'" y="'+(H-20-h)+'" width="'+Math.max(1,bw*0.7)+'" height="'+h+'" rx="3" fill="var(--primary)" opacity="'+(buckets[k]?0.85:0.15)+'"><title>'+k+' — '+fmt(buckets[k])+'</title></rect>'+
+      ((keys.length<=16||i%Math.ceil(keys.length/12)===0)?'<text x="'+(x+bw/2)+'" y="'+(H-5)+'" font-size="9" fill="var(--text2)" text-anchor="middle">'+(monthly?k:k.slice(5))+'</text>':''); }).join('');
+  el.innerHTML='<svg width="100%" height="'+H+'" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+bars+'<text x="'+(W-10)+'" y="12" font-size="10" fill="var(--text2)" text-anchor="start">أعلى: '+fmt(max)+'</text></svg>';
+}
+function setPreset(v){
+  var n=new Date(), y=n.getFullYear(), m=n.getMonth(), d=n.getDate(), f, t;
+  if(v==='today'){ f=new Date(y,m,d); t=f; } else if(v==='yday'){ f=new Date(y,m,d-1); t=f; }
+  else if(v==='week'){ f=new Date(y,m,d-6); t=new Date(y,m,d); } else if(v==='month'){ f=new Date(y,m,1); t=new Date(y,m,d); }
+  else if(v==='pmonth'){ f=new Date(y,m-1,1); t=new Date(y,m,0); } else if(v==='year'){ f=new Date(y,0,1); t=new Date(y,m,d); }
+  else { f=new Date(2025,0,1); t=new Date(y,m,d); }
+  A.from=ymd(f.getTime()); A.to=ymd(t.getTime()); render();
+}
+function exportCSV(sid){
+  var g=A.data.reg[sid]||{}, rg=rangeOf(), s=statsFor(sid,rg[0],rg[1]);
+  var lines=[['التاريخ','رقم الطلب','عدد التحاليل','العمولة لكل تحليل','العمولة','الحالة'].join(',')];
+  s.list.sort(function(a,b){return a.t-b.t;}).forEach(function(e){ lines.push([new Date(e.t).toLocaleString('en-GB').replace(',',''),shortNo(e.oid),e.n,e.r,e.st==='acc'?e.cm:0,e.st].join(',')); });
+  var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}), a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='مبيعات-'+(g.acct||sid)+'-'+A.from+'_'+A.to+'.csv'; document.body.appendChild(a); a.click(); a.remove();
+}
+function printStatement(sid){
+  var g=A.data.reg[sid]||{}, u=A.users[g.acct]||{}, rg=rangeOf(), s=statsFor(sid,rg[0],rg[1]), all=statsFor(sid), p=paidFor(sid);
+  var rowsH=s.list.filter(function(e){return e.st==='acc';}).sort(function(a,b){return a.t-b.t;}).map(function(e){return '<tr><td>'+new Date(e.t).toLocaleDateString('ar-IQ')+'</td><td dir="ltr">#'+shortNo(e.oid)+'</td><td>'+e.n+'</td><td>'+fmt(e.r)+'</td><td>'+fmt(e.cm)+'</td></tr>';}).join('');
+  var pays=p.list.filter(function(x){return x.ts>=rg[0]&&x.ts<rg[1];}).map(function(x){return '<tr><td>'+new Date(x.ts).toLocaleDateString('ar-IQ')+'</td><td>'+fmt(x.amt)+'</td><td>'+esc(x.nt||'')+'</td></tr>';}).join('');
+  var html='<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>كشف حساب '+esc(g.acct)+'</title><style>body{font-family:Tahoma,Arial;color:#111;margin:28px}h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:22px 0 8px}'+
+    'table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f1f5f4}.s{display:flex;gap:12px;margin-top:12px}.s div{flex:1;border:1px solid #ccc;border-radius:8px;padding:10px}.s b{display:block;font-size:17px}.m{color:#555;font-size:12px}</style></head><body>'+
+    '<h1>كشف حساب — عمولة متجر ميدلاب هوم</h1><div class="m">'+esc(u.labName||g.nm||'')+' — الحساب: '+esc(g.acct)+' — كود المتجر: '+esc(g.code)+'<br>الفترة: من '+esc(A.from)+' إلى '+esc(A.to)+' — تاريخ الإصدار: '+new Date().toLocaleDateString('ar-IQ')+'</div>'+
+    '<div class="s"><div>عمولة الفترة<b>'+fmt(s.com)+' '+A.cur+'</b>'+s.tests+' تحليل في '+s.acc+' طلب</div><div>إجمالي العمولة<b>'+fmt(all.com)+'</b></div><div>إجمالي المدفوع<b>'+fmt(p.sum)+'</b></div><div>الرصيد المستحق<b>'+fmt(all.com-p.sum)+' '+A.cur+'</b></div></div>'+
+    '<h2>الطلبات المقبولة في الفترة</h2><table><thead><tr><th>التاريخ</th><th>رقم الطلب</th><th>التحاليل</th><th>العمولة/تحليل</th><th>العمولة</th></tr></thead><tbody>'+(rowsH||'<tr><td colspan="5">لا يوجد</td></tr>')+'</tbody></table>'+
+    '<h2>الدفعات في الفترة</h2><table><thead><tr><th>التاريخ</th><th>المبلغ</th><th>ملاحظة</th></tr></thead><tbody>'+(pays||'<tr><td colspan="3">لا يوجد</td></tr>')+'</tbody></table></body></html>';
+  var w=window.open('','_blank'); if(!w) return say('تنبيه','اسمح بالنوافذ المنبثقة للطباعة','warning');
+  w.document.write(html); w.document.close(); setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} },400);
+}
+
+/* ───────── الأحداث ───────── */
+async function onClick(e){
+  var el=e.target.closest('[data-ac]'); if(!el || !root() || !root().contains(el)) return;
+  var x=el.getAttribute('data-ac'), v=el.getAttribute('data-v');
+  switch(x){
+    case 'reload': loadAll(); break;
+    case 'login': { var pw=(document.getElementById('ac-pw')||{}).value||''; if(!pw) return; A.err=''; A.loading=true; render();
+      try{ await connect(pw); A.loading=false; loadAll(); }catch(err){ A.loading=false; root().innerHTML=pwHtml(err.message==='need-pw'?'':err.message); } break; }
+    case 'copyuid': try{ await navigator.clipboard.writeText(v); say('تم النسخ',v,'success'); }catch(err){ say('المعرّف',v,'info'); } break;
+    case 'f': A.f=v; render(); break;
+    case 'open': A.sid=v; A.view='detail'; A.from=''; A.to=''; render(); window.scrollTo(0,0); break;
+    case 'back': A.view='list'; A.sid=null; render(); break;
+    case 'off': { var g=A.data.reg[v]||{}; var why=prompt('إيقاف متجر «'+(g.acct||'')+'»\nسبب الإيقاف (يظهر للمختبر):','يرجى تسديد المستحقات'); if(why!==null) setOff(v,true,why); break; }
+    case 'offwhy': { var w=(document.getElementById('ac-why')||{}).value||'يرجى تسديد المستحقات'; if(confirm('إيقاف استقبال الطلبات لهذا المتجر؟')) setOff(v,true,w); break; }
+    case 'on': if(confirm('إعادة تشغيل المتجر؟')) setOff(v,false); break;
+    case 'savectl': { var rate=+document.getElementById('ac-rate').value, lim=+document.getElementById('ac-lim').value||0, auto=document.getElementById('ac-auto').checked;
+      if(!(rate>=0)) return say('تنبيه','قيمة العمولة غير صحيحة','warning');
+      try{ await A.db.ref('ctl/'+v).update({rate:rate, lim:Math.max(0,lim), auto:!!auto}); A.data.ctl[v]=Object.assign({},A.data.ctl[v]||{},{rate:rate,lim:lim,auto:auto}); say('تم الحفظ','','success'); await autoSuspend(); render(); }
+      catch(err){ say('خطأ','تعذّر الحفظ','error'); } break; }
+    case 'pre': setPreset(v); break;
+    case 'pay': { var amt=+document.getElementById('ac-amt').value, d=document.getElementById('ac-pdate').value, nt=(document.getElementById('ac-pnote').value||'').trim();
+      if(!(amt>0)) return say('تنبيه','أدخل مبلغ الدفعة','warning');
+      var ts=d?new Date(d+'T12:00:00').getTime():Date.now();
+      try{ var ref=A.db.ref('pay/'+v).push(); var rec={amt:amt, ts:ts}; if(nt) rec.nt=nt.slice(0,200); await ref.set(rec);
+        A.data.pay[v]=A.data.pay[v]||{}; A.data.pay[v][ref.key]=rec; say('تم تسجيل الدفعة',fmt(amt)+' '+A.cur,'success');
+        var c=A.data.ctl[v]||{}; if(c.off && c.auto && c.lim>0 && balanceFor(v)<=c.lim && confirm('أصبح الرصيد ضمن الحد. إعادة تشغيل المتجر؟')) await setOff(v,false);
+        render(); }catch(err){ say('خطأ','تعذّر تسجيل الدفعة','error'); } break; }
+    case 'paydel': { var pid=el.getAttribute('data-p'); if(!confirm('حذف هذه الدفعة؟')) return;
+      try{ await A.db.ref('pay/'+v+'/'+pid).remove(); delete A.data.pay[v][pid]; render(); }catch(err){ say('خطأ','تعذّر الحذف','error'); } break; }
+    case 'csv': exportCSV(v); break;
+    case 'print': printStatement(v); break;
+  }
+}
+function onInput(e){
+  var el=e.target, k=el.getAttribute&&el.getAttribute('data-ac-in'); if(!k || !root().contains(el)) return;
+  if(k==='q'){ A.q=el.value; clearTimeout(A._t); A._t=setTimeout(function(){ render(); var q=root().querySelector('[data-ac-in="q"]'); if(q){ q.focus(); q.setSelectionRange(q.value.length,q.value.length);} },250); }
+  if((k==='from'||k==='to') && e.type==='change'){ A[k]=el.value; render(); }
+}
+function init(){
+  var r=root(); if(!r || r._ac) return; r._ac=1;
+  r.addEventListener('click', onClick); r.addEventListener('input', onInput); r.addEventListener('change', onInput);
+  r.addEventListener('keydown', function(e){ if(e.key==='Enter' && e.target.id==='ac-pw'){ e.preventDefault(); var b=r.querySelector('[data-ac="login"]'); if(b) b.click(); } });
+}
+window.acLoad=function(){ init(); if(!A.data || Date.now()-A.data.at>60000) loadAll(); else render(); };
+window._AC=A;
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
 </script>
 </body>
 </html>

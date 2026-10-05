@@ -4310,13 +4310,13 @@ async function loadAll(){
 
 /* ───────── الحسابات ───────── */
 function statsFor(sid, from, to){
-  var L=(A.data.led[sid])||{}, s={orders:0,acc:0,rej:0,can:0,pend:0,tests:0,com:0,last:0,list:[]};
+  var L=(A.data.led[sid])||{}, s={orders:0,acc:0,rej:0,can:0,pend:0,tests:0,com:0,sal:0,last:0,list:[]};
   Object.keys(L).forEach(function(oid){
     var e=L[oid]; if(!e) return; var t=e.st==='acc'?(e.at||e.ts):e.ts;
     if(from!=null && (t<from || t>=to)) return;
     s.orders++; if(e.ts>s.last) s.last=e.ts;
     var r=typeof e.r==='number'?e.r:rateOf(sid), cm=e.st==='acc'?(+e.n||0)*r:0;
-    if(e.st==='acc'){ s.acc++; s.tests+=(+e.n||0); s.com+=cm; } else if(e.st==='rej') s.rej++; else if(e.st==='can') s.can++; else s.pend++;
+    if(e.st==='acc'){ s.acc++; s.tests+=(+e.n||0); s.com+=cm; s.sal+=(+e.t||0); } else if(e.st==='rej') s.rej++; else if(e.st==='can') s.can++; else s.pend++;
     s.list.push({oid:oid, t:t, ts:e.ts, n:+e.n||0, r:r, cm:cm, st:e.st});
   });
   return s;
@@ -4451,7 +4451,7 @@ function detailHtml(sid){
   '<div class="card"><div class="card-hdr"><div class="card-title">📊 المبيعات حسب الفترة</div><span><button class="btn btn-sm" data-ac="csv" data-v="'+esc(sid)+'">⬇️ CSV</button> <button class="btn btn-sm" data-ac="print" data-v="'+esc(sid)+'">🖨️ كشف حساب</button></span></div>'+
     '<div class="ac-bar">'+presets.map(function(x){return '<button class="ac-chip" data-ac="pre" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+
       '<span style="margin-right:auto;display:flex;gap:6px;align-items:center">من <input class="fc" type="date" style="width:150px" data-ac-in="from" value="'+esc(A.from)+'"> إلى <input class="fc" type="date" style="width:150px" data-ac-in="to" value="'+esc(A.to)+'"></span></div>'+
-    '<div class="ac-cards" style="margin-bottom:10px">'+sc('العمولة',money(s.com))+sc('التحاليل',s.tests)+sc('طلبات مقبولة',s.acc)+sc('مرفوضة / ملغاة',s.rej+' / '+s.can)+sc('بانتظار القبول',s.pend,'',s.pend?'var(--warning)':'')+'</div>'+
+    '<div class="ac-cards" style="margin-bottom:10px">'+sc('العمولة',money(s.com))+sc('مبيعات المختبر عبر التطبيق',money(s.sal))+sc('التحاليل',s.tests)+sc('طلبات مقبولة',s.acc)+sc('مرفوضة / ملغاة',s.rej+' / '+s.can)+sc('بانتظار القبول',s.pend,'',s.pend?'var(--warning)':'')+'</div>'+
     '<div id="ac-chart" style="height:170px;margin-bottom:12px"></div>'+
     '<div class="ac-scroll" style="max-height:420px"><table class="ac-t"><thead><tr><th>التاريخ والوقت</th><th>رقم الطلب</th><th>التحاليل</th><th>العمولة/تحليل</th><th>العمولة</th><th>الحالة</th></tr></thead><tbody>'+
       (s.list.map(function(e){return '<tr><td>'+new Date(e.t).toLocaleString('ar-IQ')+'</td><td dir="ltr">#'+shortNo(e.oid)+'</td><td>'+e.n+'</td><td>'+fmt(e.r)+'</td><td><b>'+(e.st==='acc'?fmt(e.cm):'—')+'</b></td><td><span class="ac-pill '+(stCls[e.st]||'')+'">'+(stName[e.st]||esc(e.st))+'</span></td></tr>';}).join('')||'<tr><td colspan="6" class="ac-empty">لا توجد طلبات في هذه الفترة</td></tr>')+

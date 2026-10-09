@@ -4273,7 +4273,7 @@ function day0(t){ var d=new Date(t); return new Date(d.getFullYear(),d.getMonth(
 function ymd(t){ var d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function shortNo(oid){ return String(oid||'').slice(-6).toUpperCase(); }
 function TS(){ return firebase.database.ServerValue.TIMESTAMP; }
-function rateOf(sid){ var c=(A.data&&A.data.ctl[sid])||{}; return typeof c.rate==='number'?c.rate:1000; }
+function rateOf(sid){ var c=(A.data&&A.data.ctl[sid])||{}; return typeof c.rate==='number'?c.rate:500; }
 function adminEmail(){ try{ return ADMIN_EMAIL; }catch(e){ return 'saif@medlabpro.local'; } }
 
 /* ───────── الاتصال والدخول ───────── */

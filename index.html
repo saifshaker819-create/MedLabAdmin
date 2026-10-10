@@ -918,6 +918,18 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
       </div>
       <div id="diag-result"></div>
     </div>
+    <div class="card" style="border-color:rgba(0,224,135,.35)">
+      <div class="card-hdr"><div class="card-title">🔒 حماية حسابات المختبرات</div></div>
+      <div id="pw-sec-status" style="font-size:13px;line-height:1.9;margin-bottom:10px">⏳ …</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.9;margin-bottom:12px">
+        حاسبات المختبرات صارت تقرأ حسابها فقط (لا قائمة كل المختبرات).<br>
+        الخطوة الأخيرة: إخفاء بصمات كلمات المرور نفسها — بعد أن تحدّث كل المختبرات ميدلاب وتنشر قواعد Firebase الجديدة.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-p btn-sm" id="pw-sec-go" onclick="pwSecMigrate()">🔒 تفعيل حماية كلمات المرور</button>
+        <button class="btn btn-s btn-sm" id="pw-sec-back" style="display:none" onclick="pwSecRollback()">↩️ تراجع (إعادتها كما كانت)</button>
+      </div>
+    </div>
   </div>
 
 
@@ -1420,10 +1432,99 @@ function saveAdminUsers(users){
   _fbUsersCache=users;
   localStorage.setItem(ADMIN_KEY, JSON.stringify(users));
   if(fbReady && fbDb && users.length>0){
-    const obj={};
-    users.forEach(u=>{ obj[u.username]=u; });
-    fbDb.ref('admin/users').set(obj).catch(e=>console.error(e));
+    const obj=_usersForFirebase(users);
+    fbDb.ref('admin/users').set(obj.users).catch(e=>console.error(e));
+    if(obj.pwN) _pwWriteMany(obj.pw);
   }
+}
+/* ═══════════ 🔒 حماية كلمات مرور المختبرات ═══════════
+   قبل الترحيل: كل شيء كما كان (البصمة داخل admin/users).
+   بعد الترحيل (admin/pwMoved = true): البصمة في admin/pw (لا يقرؤها إلا الأدمن)،
+   وسجل المستخدم في admin/users بلا كلمة مرور — والتحقق عند الدخول يتم على الخادم. */
+let _pwMoved=false;
+function _loadPwMovedFlag(){
+  if(!(fbReady&&fbDb)) return Promise.resolve(false);
+  return fbDb.ref('admin/pwMoved').once('value').then(sn=>{ _pwMoved = sn.val()===true; _pwStatusUI(); return _pwMoved; }).catch(()=>false);
+}
+function _usersForFirebase(users){
+  const out={}, pw={}; let pwN=0;
+  users.forEach(u=>{
+    const o=Object.assign({},u);
+    delete o._fbNoPw;
+    if(_pwMoved){ if(o.password){ pw[o.username]=o.password; pwN++; } delete o.password; }
+    out[u.username]=o;
+  });
+  return {users:out, pw:pw, pwN:pwN};
+}
+async function _pwWriteMany(map){
+  if(!(fbReady&&fbDb)) return;
+  const up={};
+  for(const k of Object.keys(map)){ let v=map[k]; if(v && v.length<60) v=await hashPassword(v); if(v) up[k]=v; }
+  if(Object.keys(up).length) await fbDb.ref('admin/pw').update(up).catch(e=>console.error('pw write',e));
+  // لا نُبقي البصمات في الكاش المحلي بعد كتابتها (حتى لا تُعاد كتابة قديمة لاحقاً)
+  const cache=getAdminUsers(); let ch=false;
+  cache.forEach(u=>{ if(up[u.username] && u.password){ delete u.password; ch=true; } });
+  if(ch){ _fbUsersCache=cache; localStorage.setItem(ADMIN_KEY, JSON.stringify(cache)); }
+}
+function _pwMove(oldU,newU){
+  if(!(_pwMoved&&fbReady&&fbDb) || !oldU || !newU || oldU===newU) return Promise.resolve();
+  return fbDb.ref('admin/pw/'+oldU).once('value').then(sn=>{
+    const v=sn.val(), up={}; up['admin/pw/'+oldU]=null; up['admin/chk/'+oldU]=null; if(v) up['admin/pw/'+newU]=v;
+    return fbDb.ref().update(up);
+  }).catch(e=>console.error('pw move',e));
+}
+function _pwRemove(uname){
+  if(!(fbReady&&fbDb) || !uname) return;
+  const up={}; up['admin/pw/'+uname]=null; up['admin/chk/'+uname]=null;
+  fbDb.ref().update(up).catch(()=>{});
+}
+function _pwStatusUI(){
+  const el=document.getElementById('pw-sec-status'); if(!el) return;
+  el.innerHTML=_pwMoved
+    ? '🟢 <b>مفعّلة</b> — كلمات المرور مخفية في admin/pw، والتحقق عند الدخول يتم على الخادم.'
+    : '🟡 <b>غير مفعّلة بعد</b> — بصمات كلمات المرور ما زالت داخل admin/users.';
+  const go=document.getElementById('pw-sec-go'), back=document.getElementById('pw-sec-back');
+  if(go) go.style.display=_pwMoved?'none':''; if(back) back.style.display=_pwMoved?'':'none';
+}
+/* الترحيل: نسخ البصمات إلى admin/pw ← التحقق من النسخ ← حذفها من admin/users ← رفع العلَم */
+async function pwSecMigrate(){
+  if(!fbIsAdmin){ showNotif('غير مسموح','يجب الدخول بحساب الأدمن','error'); return; }
+  if(!confirm('🔒 ترحيل كلمات المرور\n\nتأكد أولاً:\n1) كل المختبرات حدّثت ميدلاب إلى الإصدار الجديد.\n2) نشرت قواعد Firebase الجديدة.\n\nالمختبرات بالإصدار القديم لن تستطيع الدخول من جهاز جديد بعد الترحيل (أجهزتها الحالية تبقى تعمل).\n\nمتابعة؟')) return;
+  const el=document.getElementById('diag-result'); el.style.display='block'; el.textContent='⏳ قراءة المستخدمين…\n';
+  try{
+    const raw=(await fbDb.ref('admin/users').once('value')).val()||{};
+    const pw={};
+    for(const u of Object.keys(raw)){ let p=raw[u]&&raw[u].password; if(!p) continue; if(p.length<60) p=await hashPassword(p); pw[u]=p; }
+    const n=Object.keys(pw).length;
+    el.textContent+='• بصمات للنقل: '+n+'\n';
+    if(n) await fbDb.ref('admin/pw').update(pw);
+    const back=(await fbDb.ref('admin/pw').once('value')).val()||{};
+    const bad=Object.keys(pw).filter(u=>back[u]!==pw[u]);
+    if(bad.length){ el.textContent+='❌ لم تُنسخ بصمات: '+bad.join('، ')+' — توقّف الترحيل ولم يُحذف شيء.\n'; return; }
+    el.textContent+='• تم التحقق من النسخ ✅\n';
+    const up={}; Object.keys(raw).forEach(u=>{ if(raw[u]&&raw[u].password!==undefined) up['admin/users/'+u+'/password']=null; });
+    up['admin/pwMoved']=true;
+    await fbDb.ref().update(up);
+    _pwMoved=true;
+    const cache=getAdminUsers(); cache.forEach(u=>{ delete u.password; }); _fbUsersCache=cache; localStorage.setItem(ADMIN_KEY, JSON.stringify(cache));
+    el.textContent+='✅ اكتمل: كلمات المرور لم تعد مقروءة من حاسبات المختبرات.\n';
+    _pwStatusUI(); showNotif('✅ تم','تفعيل حماية كلمات المرور','success');
+  }catch(e){ el.textContent+='❌ فشل: '+(e&&e.message||e)+'\n(هل نشرت قواعد Firebase الجديدة؟)\n'; }
+}
+/* التراجع (احتياط): إعادة البصمات إلى admin/users كما كانت */
+async function pwSecRollback(){
+  if(!fbIsAdmin){ showNotif('غير مسموح','يجب الدخول بحساب الأدمن','error'); return; }
+  if(!confirm('إعادة كلمات المرور إلى admin/users (إلغاء الحماية)؟')) return;
+  const el=document.getElementById('diag-result'); el.style.display='block'; el.textContent='⏳ …\n';
+  try{
+    const pw=(await fbDb.ref('admin/pw').once('value')).val()||{};
+    const users=(await fbDb.ref('admin/users').once('value')).val()||{};
+    const up={}; Object.keys(pw).forEach(u=>{ if(users[u]) up['admin/users/'+u+'/password']=pw[u]; });
+    up['admin/pwMoved']=null;
+    await fbDb.ref().update(up);
+    _pwMoved=false; _pwStatusUI();
+    el.textContent+='✅ أُعيدت '+Object.keys(pw).length+' بصمة إلى admin/users.\n';
+  }catch(e){ el.textContent+='❌ فشل: '+(e&&e.message||e)+'\n'; }
 }
 
 function getLabDirectory(){
@@ -1673,6 +1774,7 @@ function adminDeleteUser(uname){
     fbDb.ref('admin/users/'+uname).remove();
     fbDb.ref('dir/'+uname).remove();
     fbDb.ref('sessions/'+uname).remove();
+    _pwRemove(uname);
   }
   const dir=getLabDirectory(); delete dir[uname]; saveLabDirectory(dir);
   renderAdminUsers();
@@ -1910,7 +2012,8 @@ async function saveChangePw(){
   saveAdminUsers(users);
   if(fbReady&&fbDb){
     fbDb.ref('sessions/'+_chpwTargetUser).remove();
-    fbDb.ref('admin/users/'+_chpwTargetUser+'/password').set(hashedPw);
+    if(_pwMoved) fbDb.ref('admin/pw/'+_chpwTargetUser).set(hashedPw);
+    else fbDb.ref('admin/users/'+_chpwTargetUser+'/password').set(hashedPw);
   }
   localStorage.removeItem('medlab_device_token_'+_chpwTargetUser);
   closeModal('m-change-pw');
@@ -2040,6 +2143,7 @@ async function saveAdminEditUser(oldUname){
     if(newUname&&newUname!==oldUname){
       fbDb.ref('sessions/'+newUname).remove();
       fbDb.ref('admin/users/'+oldUname).remove();
+      if(!newPass) _pwMove(oldUname,newUname); else _pwRemove(oldUname);
     }
   }
   localStorage.removeItem('medlab_device_token_'+oldUname);
@@ -2310,6 +2414,7 @@ function diagFirebase(){
 
 function cleanAllPasswords(){
   if(!fbReady||!fbDb){ showNotif('خطأ','لا يوجد اتصال بـ Firebase','error'); return; }
+  if(!_pwMoved && !confirm('⚠️ حماية كلمات المرور غير مفعّلة بعد.\nمسح كلمات المرور الآن يمنع المختبرات من الدخول من أي جهاز جديد!\nالأفضل استخدام «🔒 تفعيل حماية كلمات المرور».\n\nالمسح على أي حال؟')) return;
   fbDb.ref('admin/users').once('value').then(snap=>{
     const raw=snap.val();
     if(!raw){ showNotif('تنبيه','لا يوجد مستخدمون في DB','warning'); return; }
@@ -2335,8 +2440,8 @@ function forceSyncToFirebase(){
   el.textContent='⏳ جاري الرفع...\n';
   loadFirebase().then(ok=>{
     if(!ok){ el.textContent+='❌ تعذر الاتصال بـ Firebase'; return; }
-    const obj={};
-    local.forEach(u=>{ obj[u.username]=u; });
+    const _o=_usersForFirebase(local), obj=_o.users;
+    if(_o.pwN) _pwWriteMany(_o.pw);
     fbDb.ref('admin/users').set(obj).then(()=>{
       _fbUsersCache=local;
       el.textContent='✅ تم رفع '+local.length+' مستخدم إلى Firebase!\n';
@@ -2492,6 +2597,7 @@ function slClearSub(uname){
   // تحميل Firebase
   const ok = await loadFirebase();
   if(ok){
+    try{ await _loadPwMovedFlag(); }catch(e){}
     // مزامنة المستخدمين من Firebase
     try{
       const snap = await fbDb.ref('admin/users').once('value');

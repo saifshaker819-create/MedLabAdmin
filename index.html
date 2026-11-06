@@ -797,9 +797,10 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
         <div class="fg" style="margin-bottom:0"><label class="fl">🏥 اسم العيادة <span class="req">*</span></label><input class="fc" id="ca-cname" placeholder="مثال: عيادة الدكتور أحمد"></div>
         <div class="fg" style="margin-bottom:0"><label class="fl">👨‍⚕️ اسم الطبيب</label><input class="fc" id="ca-dname" placeholder="مثال: د. أحمد محمد"></div>
       </div>
-      <div class="fr2" style="margin-bottom:14px">
+      <div class="fr3" style="margin-bottom:14px">
         <div class="fg" style="margin-bottom:0"><label class="fl">📍 العنوان / المدينة</label><input class="fc" id="ca-addr" placeholder="مثال: بغداد - المنصور"></div>
         <div class="fg" style="margin-bottom:0"><label class="fl">📞 الهاتف</label><input class="fc" id="ca-phone" dir="ltr" placeholder="07XX XXX XXXX"></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">🔢 عدد الأجهزة المسموحة <span style="font-size:10px;color:var(--text2)">(حاسبة الطبيب والسكرتير = جهازان)</span></label><input class="fc" id="ca-maxdev" type="number" min="1" max="20" value="1"></div>
       </div>
       <div id="ca-err" class="err-box"></div>
       <button class="btn btn-p" id="ca-create" onclick="CLACC.create()" style="margin-top:4px">💾 إنشاء الحساب</button>
@@ -825,7 +826,8 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
   ".read":  "auth != null &amp;&amp; auth.token.email == 'saif@medlabpro.local'",
   ".write": "auth != null &amp;&amp; auth.token.email == 'saif@medlabpro.local'",
   "users": { "$u": { ".read": "auth != null" } },
-  "keys":  { "$k": { ".read": "auth != null" } }
+  "keys":  { "$k": { ".read": "auth != null" } },
+  "sess":  { "$u": { ".read": "auth != null", ".write": "auth != null" } }
 },</pre>
         <button class="btn btn-s btn-sm" onclick="CLACC.copyRules()">📋 نسخ القاعدة</button>
       </details>
@@ -1669,7 +1671,7 @@ function showNotif(title, msg, type='info'){
 // MODAL
 // ═══════════════════════════════════════════════════
 function openModal(id){ document.getElementById(id).style.display='flex'; }
-function closeModal(id){ document.getElementById(id).style.display='none'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; if(id==='m-clacc' && window.CLACC) CLACC._CA.devOpen=null; }
 
 document.querySelectorAll('.moverlay').forEach(m=>{
   m.addEventListener('click',e=>{ if(e.target===m) m.style.display='none'; });
@@ -4763,7 +4765,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
    ══════════════════════════════════════════════════════════════════════ */
 (function(){
 'use strict';
-var CA={ users:{}, ref:null, q:'', f:'all', timer:null, target:null, editing:null };
+var CA={ users:{}, sess:{}, sref:null, ref:null, q:'', f:'all', timer:null, target:null, editing:null };
 var DAY=864e5;
 var DUR={ week:7, month:30, year:365 };
 var DUR_L={ week:'أسبوع', month:'شهر', year:'سنة', permanent:'دائم', custom:'مخصص' };
@@ -4776,6 +4778,8 @@ async function keyHash(u,p){
   var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mlclinic-acc-v1::'+String(u).toLowerCase()+'::'+String(p)));
   return Array.from(new Uint8Array(b)).map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
 }
+function maxDev(u){ return (typeof u.maxDevices==='number' && u.maxDevices>=1)?u.maxDevices:1; }
+function devList(un){ var o=CA.sess[un]||{}; return Object.keys(o).map(function(k){ var v=o[k]||{}; v.id=k; return v; }).sort(function(a,b){ return (a.first||0)-(b.first||0); }); }
 function isPerm(u){ return u.type==='permanent' || !u.expiry; }
 function state(u){
   if(u.disabled) return 'disabled';
@@ -4809,6 +4813,7 @@ function load(){
   var d=db();
   if(!d){ draw(); return; }
   if(CA.ref) return;
+  CA.sref=d.ref('clinicAcc/sess'); CA.sref.on('value',function(sn){ CA.sess=sn.val()||{}; draw(); if(el('m-clacc').style.display==='flex' && CA.devOpen) devs(CA.devOpen,true); },function(){ });
   CA.ref=d.ref('clinicAcc/users');
   CA.ref.on('value',function(sn){ CA.users=sn.val()||{}; draw(); },function(e){ CA.ref=null; var l=el('ca-list'); if(l) l.innerHTML='<div class="empty-state"><div>⛔</div><div style="font-size:12px">تعذّر قراءة الحسابات: '+esc(e&&e.message||e)+'<br>تأكد من إضافة قاعدة clinicAcc في Firebase (أسفل الصفحة).</div></div>'; });
 }
@@ -4850,6 +4855,7 @@ function draw(){
         '<button class="btn btn-sm" style="background:'+(u.disabled?'rgba(0,245,147,.15)':'rgba(255,170,0,.12)')+';color:'+(u.disabled?'var(--success)':'var(--warning)')+';border:1px solid '+(u.disabled?'rgba(0,245,147,.4)':'rgba(255,170,0,.4)')+'" onclick="CLACC.toggle(\''+un+'\')">'+(u.disabled?'✅ تفعيل':'🚫 تعطيل')+'</button>'+
         '<button class="btn btn-sm" style="background:rgba(0,245,147,.1);color:var(--success);border:1px solid rgba(0,245,147,.35)" onclick="CLACC.renew(\''+un+'\')">📅 تجديد</button>'+
         '<button class="btn btn-sm" style="background:rgba(0,212,255,.1);color:var(--primary);border:1px solid rgba(0,212,255,.35)" onclick="CLACC.pw(\''+un+'\')">🔑 كلمة مرور</button>'+
+        '<button class="btn btn-sm" style="background:rgba(0,212,255,.08);color:var(--primary);border:1px solid rgba(0,212,255,.3)" onclick="CLACC.devs(\''+un+'\')" title="الأجهزة المفعّلة">🔢 '+devList(u.username).length+'/'+maxDev(u)+'</button>'+
         '<button class="btn btn-sm btn-icon" onclick="CLACC.edit(\''+un+'\')" title="تعديل">✏️</button>'+
         '<button class="btn btn-sm btn-d" onclick="CLACC.del(\''+un+'\')" title="حذف">🗑️</button>'+
       '</div></div>';
@@ -4874,6 +4880,7 @@ async function create(){
   var type=el('ca-type').value;
   var cn=(el('ca-cname').value||'').trim(), dn=(el('ca-dname').value||'').trim();
   var ad=(el('ca-addr').value||'').trim(), ph=(el('ca-phone').value||'').trim();
+  var md=parseInt(el('ca-maxdev').value,10); if(isNaN(md)||md<1||md>20) return err('❌ عدد الأجهزة بين 1 و 20');
   if(!u || !/^[a-z]+$/.test(u)) return err('❌ اسم المستخدم: أحرف إنجليزية صغيرة فقط');
   if(!p || !/^[0-9]+$/.test(p)) return err('❌ كلمة المرور: أرقام فقط');
   if(p.length<4) return err('❌ كلمة المرور: 4 أرقام على الأقل');
@@ -4887,10 +4894,10 @@ async function create(){
     if(ex){ err('❌ اسم المستخدم مستخدم مسبقاً'); return; }
     var now=Date.now(), kh=await keyHash(u,p);
     var rec={ username:u, type:type==='permanent'?'permanent':'temp', durationType:type, expiry:type==='permanent'?null:now+DUR[type]*DAY,
-      disabled:false, clinicName:cn, doctorName:dn, address:ad, phone:ph, created:new Date().toISOString().split('T')[0], createdAt:now };
+      disabled:false, maxDevices:md, clinicName:cn, doctorName:dn, address:ad, phone:ph, created:new Date().toISOString().split('T')[0], createdAt:now };
     var up={}; up['clinicAcc/users/'+u]=rec; up['clinicAcc/keys/'+kh]=u; up['clinicAcc/kidx/'+u]=kh;
     await d.ref().update(up);
-    ['ca-uname','ca-pass','ca-cname','ca-dname','ca-addr','ca-phone'].forEach(function(i){ el(i).value=''; });
+    ['ca-uname','ca-pass','ca-cname','ca-dname','ca-addr','ca-phone'].forEach(function(i){ el(i).value=''; }); el('ca-maxdev').value='1';
     showNotif('✅ تم','تم إنشاء حساب العيادة: '+u+' ('+DUR_L[type]+') — يُستخدم عند أول فتح لبرنامج عيادتي','success');
   }catch(e){ permErr(e); }
   finally{ btn.disabled=false; }
@@ -4984,16 +4991,49 @@ async function del(un){
   if(!needAdmin()) return;
   try{
     var d=db(), kh=(await d.ref('clinicAcc/kidx/'+un).once('value')).val(), up={};
-    up['clinicAcc/users/'+un]=null; up['clinicAcc/kidx/'+un]=null; if(kh) up['clinicAcc/keys/'+kh]=null;
+    up['clinicAcc/users/'+un]=null; up['clinicAcc/kidx/'+un]=null; up['clinicAcc/sess/'+un]=null; if(kh) up['clinicAcc/keys/'+kh]=null;
     await d.ref().update(up); showNotif('تم','تم حذف '+un,'success');
   }catch(e){ permErr(e); }
+}
+function devs(un,keep){
+  var u=CA.users[un]; if(!u) return;
+  if(keep && document.activeElement && document.activeElement.id==='ca-dmax') return;
+  CA.target=un; CA.devOpen=un;
+  var L=devList(un), mx=maxDev(u), now=Date.now();
+  var rows=L.length?L.map(function(v){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:9px;margin-bottom:6px">'+
+      '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:12px">💻 '+esc(v.name||'جهاز')+(v.role?' <span style="color:var(--primary);font-weight:600">('+esc(v.role)+')</span>':'')+'</div>'+
+      '<div style="font-size:10px;color:var(--text2)">فُعِّل: '+fmtD(v.first)+(v.last?' · آخر ظهور: '+new Date(v.last).toLocaleString('ar-IQ'):'')+'</div></div>'+
+      '<button class="btn btn-sm btn-d" onclick="CLACC.rmDev(\''+esc(un)+'\',\''+esc(v.id)+'\')">🗑️ فصل</button></div>';
+  }).join(''):'<div style="color:var(--text2);font-size:12px;padding:8px">لا توجد أجهزة مفعّلة حالياً</div>';
+  modal('🔢 أجهزة: <span style="color:var(--primary)">'+esc(un)+'</span>',
+    '<div style="background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;font-weight:700">المفعّل: '+L.length+' من '+mx+' جهاز مسموح</div>'+
+    '<div style="margin-bottom:12px">'+rows+'</div>'+
+    '<div class="fg"><label class="fl">عدد الأجهزة المسموحة</label><div style="display:flex;gap:7px"><input class="fc" id="ca-dmax" type="number" min="1" max="20" value="'+mx+'"><button class="btn btn-p btn-sm" onclick="CLACC.saveMax()">💾 حفظ</button></div></div>'+
+    '<div style="font-size:11px;color:var(--text2);line-height:1.8">• عند وصول الحد، أي جهاز جديد يُرفض تفعيله حتى تفصل جهازاً قديماً.<br>• الجهاز المفصول يُسجَّل خروجه تلقائياً ويحتاج تفعيلاً من جديد.</div>',
+    '<button class="btn btn-d" onclick="CLACC.resetDevs()">🔄 فصل كل الأجهزة</button><button class="btn btn-s" onclick="closeModal(\'m-clacc\')">إغلاق</button>');
+}
+async function saveMax(){
+  var un=CA.target, n=parseInt((el('ca-dmax')||{}).value,10);
+  if(isNaN(n)||n<1||n>20){ showNotif('خطأ','أدخل رقماً بين 1 و 20','error'); return; }
+  if(!needAdmin()) return;
+  try{ await db().ref('clinicAcc/users/'+un+'/maxDevices').set(n); showNotif('✅ تم','عدد الأجهزة المسموحة لـ '+un+' = '+n,'success'); }catch(e){ permErr(e); }
+}
+async function rmDev(un,id){
+  if(!needAdmin()) return;
+  try{ await db().ref('clinicAcc/sess/'+un+'/'+id).remove(); showNotif('تم','تم فصل الجهاز','success'); }catch(e){ permErr(e); }
+}
+async function resetDevs(){
+  var un=CA.target; if(!confirm('فصل كل أجهزة "'+un+'"؟ سيُسجَّل خروجها وتحتاج تفعيلاً جديداً.')) return;
+  if(!needAdmin()) return;
+  try{ await db().ref('clinicAcc/sess/'+un).remove(); showNotif('تم','تم فصل كل أجهزة '+un,'success'); }catch(e){ permErr(e); }
 }
 function copyRules(){
   var t=el('ca-rules').textContent;
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ showNotif('✅','تم نسخ القاعدة','success'); }).catch(function(){ var r=document.createRange(); r.selectNode(el('ca-rules')); var s=getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); showNotif('✅','تم نسخ القاعدة','success'); });
 }
 
-window.CLACC={ load:load, draw:draw, create:create, suggestU:suggestU, suggestP:suggestP, toggle:toggle, renew:renew, doRenew:doRenew, pw:pw, doPw:doPw, edit:edit, doEdit:doEdit, del:del, copyRules:copyRules,
+window.CLACC={ devs:devs, saveMax:saveMax, rmDev:rmDev, resetDevs:resetDevs, load:load, draw:draw, create:create, suggestU:suggestU, suggestP:suggestP, toggle:toggle, renew:renew, doRenew:doRenew, pw:pw, doPw:doPw, edit:edit, doEdit:doEdit, del:del, copyRules:copyRules,
   filter:function(f){ CA.f=f; draw(); }, search:function(q){ CA.q=q||''; draw(); }, _CA:CA, _keyHash:keyHash };
 
 /* ربط التبويب الجديد مع switchTab الموجودة بدون تعديلها */

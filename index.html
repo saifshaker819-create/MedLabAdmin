@@ -684,6 +684,7 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
   <!-- TABS -->
   <div class="tabs-nav">
     <button class="tab-btn active" onclick="switchTab('users')" id="tab-users">👥 إدارة المستخدمين</button>
+    <button class="tab-btn" onclick="switchTab('clinicacc')" id="tab-clinicacc" style="color:#00e87a">🩺 عيادتي</button>
     <button class="tab-btn" onclick="switchTab('notif')" id="tab-notif">📢 الإشعارات</button>
     <button class="tab-btn" onclick="switchTab('monitor')" id="tab-monitor">🖥️ المراقبة</button>
     <button class="tab-btn" onclick="switchTab('messages')" id="tab-messages">💬 الرسائل والنسخ</button>
@@ -760,6 +761,76 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
     </div>
 
   </div><!-- /pane-users -->
+
+  <!-- ══════════════════════════════════════════
+       TAB — عيادتي (حسابات تفعيل برنامج عيادتي)
+  ══════════════════════════════════════════ -->
+  <div class="tab-pane" id="pane-clinicacc">
+    <div class="card" style="border-color:rgba(0,232,122,.35)">
+      <div class="card-hdr"><div class="card-title">➕ إنشاء حساب عيادة جديد <span style="font-size:11px;color:var(--text2);font-weight:600">— يُطلب عند أول فتح لبرنامج «عيادتي»</span></div></div>
+      <div class="fr3" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">اسم المستخدم <span style="font-size:10px;color:var(--text2)">(أحرف فقط)</span></label>
+          <div style="display:flex;gap:7px">
+            <input class="fc" id="ca-uname" placeholder="مثال: clinicone" oninput="this.value=this.value.replace(/[^a-zA-Z]/g,'').toLowerCase()">
+            <button class="btn btn-s btn-sm" onclick="CLACC.suggestU()" title="اقتراح اسم">🎲</button>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">كلمة المرور <span style="font-size:10px;color:var(--text2)">(أرقام فقط)</span></label>
+          <div style="display:flex;gap:7px">
+            <input class="fc" id="ca-pass" placeholder="مثال: 123456" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <button class="btn btn-s btn-sm" onclick="CLACC.suggestP()" title="اقتراح رقم">🎲</button>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">نوع الاشتراك</label>
+          <select class="fc" id="ca-type">
+            <option value="permanent">♾️ دائم</option>
+            <option value="week">📅 أسبوع (7 أيام)</option>
+            <option value="month" selected>📅 شهر (30 يوم)</option>
+            <option value="year">📅 سنة (365 يوم)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr2" style="margin-bottom:10px">
+        <div class="fg" style="margin-bottom:0"><label class="fl">🏥 اسم العيادة <span class="req">*</span></label><input class="fc" id="ca-cname" placeholder="مثال: عيادة الدكتور أحمد"></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">👨‍⚕️ اسم الطبيب</label><input class="fc" id="ca-dname" placeholder="مثال: د. أحمد محمد"></div>
+      </div>
+      <div class="fr2" style="margin-bottom:14px">
+        <div class="fg" style="margin-bottom:0"><label class="fl">📍 العنوان / المدينة</label><input class="fc" id="ca-addr" placeholder="مثال: بغداد - المنصور"></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">📞 الهاتف</label><input class="fc" id="ca-phone" dir="ltr" placeholder="07XX XXX XXXX"></div>
+      </div>
+      <div id="ca-err" class="err-box"></div>
+      <button class="btn btn-p" id="ca-create" onclick="CLACC.create()" style="margin-top:4px">💾 إنشاء الحساب</button>
+      <div style="font-size:11px;color:var(--text2);margin-top:10px;line-height:1.9">⏰ التنبيه في البرنامج: <b>الأسبوع</b> عند الوصول لليوم الخامس (آخر يومين) · <b>الشهر والسنة</b> آخر 10 أيام — ويتحول العدّاد للأحمر. عند الانتهاء يُسجَّل خروج العيادة تلقائياً ولا يعمل الحساب إلا بعد التجديد من هنا.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title">🩺 حسابات العيادات <span class="bdg bdg-p" id="ca-count">0</span></div>
+        <input class="fc" style="max-width:240px" placeholder="🔍 بحث بالاسم أو العيادة أو الهاتف…" oninput="CLACC.search(this.value)">
+      </div>
+      <div id="ca-filters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="ca-list"><div class="empty-state"><div>🩺</div><div>جاري التحميل...</div></div></div>
+    </div>
+
+    <div class="card" style="border-color:rgba(255,170,0,.35)">
+      <details>
+        <summary style="cursor:pointer;font-weight:800;font-size:13px">🔐 قاعدة Firebase المطلوبة (مرة واحدة) — اضغط للعرض</summary>
+        <div style="font-size:12px;color:var(--text2);line-height:1.9;margin:10px 0">
+          افتح Firebase Console ← مشروع <b>rescuse</b> ← Realtime Database ← Rules، والصق هذا الجزء داخل <code>"rules": { … }</code> بجانب قاعدة <code>"dpl"</code> (لا تحذف القواعد الموجودة)، ثم Publish.
+        </div>
+        <pre id="ca-rules" dir="ltr" style="background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;overflow:auto;text-align:left">"clinicAcc": {
+  ".read":  "auth != null &amp;&amp; auth.token.email == 'saif@medlabpro.local'",
+  ".write": "auth != null &amp;&amp; auth.token.email == 'saif@medlabpro.local'",
+  "users": { "$u": { ".read": "auth != null" } },
+  "keys":  { "$k": { ".read": "auth != null" } }
+},</pre>
+        <button class="btn btn-s btn-sm" onclick="CLACC.copyRules()">📋 نسخ القاعدة</button>
+      </details>
+    </div>
+  </div><!-- /pane-clinicacc -->
 
   <!-- ══════════════════════════════════════════
        TAB 2 — NOTIFICATIONS
@@ -1163,6 +1234,15 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
 ════════════════════════════════════════════ -->
 
 <!-- Extend Sub -->
+<!-- 🩺 نافذة حسابات عيادتي -->
+<div class="moverlay" id="m-clacc">
+  <div class="modal" style="max-width:440px">
+    <div class="mhdr"><div class="mtitle" id="m-clacc-title"></div><button class="mclose" onclick="closeModal('m-clacc')">×</button></div>
+    <div class="mbody" id="m-clacc-body"></div>
+    <div class="mftr" id="m-clacc-foot"></div>
+  </div>
+</div>
+
 <div class="moverlay" id="m-extend-sub">
   <div class="modal" style="max-width:420px">
     <div class="mhdr">
@@ -4660,6 +4740,268 @@ function init(){
 window.acLoad=function(){ init(); if(!A.data || Date.now()-A.data.at>60000) loadAll(); else render(); };
 window._AC=A;
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
+<style id="clinic-acc-css">
+.ca-cd{font-family:Consolas,monospace;font-weight:900;font-size:13px;padding:6px 10px;border-radius:9px;white-space:nowrap;direction:rtl;min-width:150px;text-align:center}
+.ca-cd-ok{background:rgba(0,232,122,.1);color:#00c96a;border:1px solid rgba(0,232,122,.35)}
+.ca-cd-perm{background:rgba(139,63,255,.1);color:var(--secondary);border:1px solid rgba(139,63,255,.3)}
+.ca-cd-warn,.ca-cd-expired{background:rgba(255,34,68,.14);color:#ff2244;border:1px solid rgba(255,34,68,.5)}
+.ca-cd-warn{animation:caPulse 1.4s ease-in-out infinite}
+.ca-cd-disabled{background:rgba(128,128,128,.12);color:var(--text2);border:1px solid var(--border)}
+@keyframes caPulse{50%{box-shadow:0 0 0 4px rgba(255,34,68,.15)}}
+#pane-clinicacc .user-row{gap:10px;flex-wrap:wrap}
+</style>
+<script id="clinic-acc-module">
+/* ══════════════════════════════════════════════════════════════════════
+   🩺 تبويب «عيادتي» — حسابات تفعيل برنامج عيادتي
+   المسارات في Firebase (مشروع rescuse):
+     clinicAcc/users/{user}  ← بيانات الحساب: النوع، تاريخ الانتهاء، التعطيل، اسم العيادة …
+     clinicAcc/keys/{hash}   ← user  (hash = SHA256 لاسم المستخدم + كلمة المرور) — يُقرأ بمعرفة المفتاح فقط
+     clinicAcc/kidx/{user}   ← hash الحالي (للأدمن فقط — لتغيير كلمة المرور والحذف)
+   لا تُخزَّن كلمة المرور نفسها في أي مكان.
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+var CA={ users:{}, ref:null, q:'', f:'all', timer:null, target:null, editing:null };
+var DAY=864e5;
+var DUR={ week:7, month:30, year:365 };
+var DUR_L={ week:'أسبوع', month:'شهر', year:'سنة', permanent:'دائم', custom:'مخصص' };
+/* مهلة التنبيه: الأسبوع ← عند الوصول لليوم الخامس (يبقى يومان) · الشهر والسنة ← آخر 10 أيام */
+function warnDays(u){ return u.durationType==='week'?2:(u.durationType==='permanent'||u.type==='permanent')?0:10; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function el(id){ return document.getElementById(id); }
+function db(){ return (typeof fbReady!=='undefined' && fbReady && typeof fbDb!=='undefined' && fbDb)?fbDb:null; }
+async function keyHash(u,p){
+  var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mlclinic-acc-v1::'+String(u).toLowerCase()+'::'+String(p)));
+  return Array.from(new Uint8Array(b)).map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
+}
+function isPerm(u){ return u.type==='permanent' || !u.expiry; }
+function state(u){
+  if(u.disabled) return 'disabled';
+  if(isPerm(u)) return 'perm';
+  var left=u.expiry-Date.now();
+  if(left<=0) return 'expired';
+  if(left<=warnDays(u)*DAY) return 'warn';
+  return 'ok';
+}
+function cdText(ms){
+  if(ms<=0) return '00:00:00';
+  var d=Math.floor(ms/DAY), h=Math.floor(ms%DAY/36e5), m=Math.floor(ms%36e5/6e4), s=Math.floor(ms%6e4/1e3);
+  var p=function(n){ return String(n).padStart(2,'0'); };
+  return (d?d+' يوم · ':'')+p(h)+':'+p(m)+':'+p(s);
+}
+function fmtD(t){ try{ return new Date(t).toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'}); }catch(e){ return ''; } }
+function err(msg){ var e=el('ca-err'); if(!e) return; e.textContent=msg||''; e.style.display=msg?'block':'none'; }
+function needAdmin(){
+  if(!db()){ showNotif('خطأ','لا يوجد اتصال بـ Firebase','error'); return false; }
+  if(typeof fbIsAdmin!=='undefined' && !fbIsAdmin){ showNotif('غير مسموح','اللوحة بوضع القراءة فقط — ادخل بحساب الأدمن','error'); return false; }
+  return true;
+}
+function permErr(e){
+  var m=String(e&&e.message||e);
+  if(/permission/i.test(m)) showNotif('⛔ مرفوض من Firebase','أضف قاعدة clinicAcc في قواعد Firebase (موجودة أسفل هذا التبويب) ثم أعد المحاولة','error');
+  else showNotif('خطأ',m,'error');
+}
+
+/* ═════ تحميل وعرض ═════ */
+function load(){
+  var d=db();
+  if(!d){ draw(); return; }
+  if(CA.ref) return;
+  CA.ref=d.ref('clinicAcc/users');
+  CA.ref.on('value',function(sn){ CA.users=sn.val()||{}; draw(); },function(e){ CA.ref=null; var l=el('ca-list'); if(l) l.innerHTML='<div class="empty-state"><div>⛔</div><div style="font-size:12px">تعذّر قراءة الحسابات: '+esc(e&&e.message||e)+'<br>تأكد من إضافة قاعدة clinicAcc في Firebase (أسفل الصفحة).</div></div>'; });
+}
+function list(){
+  return Object.keys(CA.users).map(function(k){ var u=CA.users[k]||{}; u.username=u.username||k; return u; })
+    .sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+}
+function draw(){
+  var box=el('ca-list'); if(!box) return;
+  var all=list(), q=CA.q.trim().toLowerCase();
+  var cnt={all:all.length,ok:0,warn:0,expired:0,disabled:0,perm:0};
+  all.forEach(function(u){ cnt[state(u)]++; });
+  var fb=el('ca-filters');
+  if(fb) fb.innerHTML=[['all','الكل'],['ok','✅ فعّال'],['perm','♾️ دائم'],['warn','⚠️ قريب الانتهاء'],['expired','⛔ منتهي'],['disabled','🚫 معطّل']].map(function(x){
+    return '<button class="btn btn-sm '+(CA.f===x[0]?'btn-p':'btn-s')+'" onclick="CLACC.filter(\''+x[0]+'\')">'+x[1]+' <b>'+cnt[x[0]]+'</b></button>'; }).join('');
+  var lbl=el('ca-count'); if(lbl) lbl.textContent=all.length;
+  var rows=all.filter(function(u){
+    if(CA.f!=='all' && state(u)!==CA.f) return false;
+    if(!q) return true;
+    return [u.username,u.clinicName,u.doctorName,u.address,u.phone].join(' ').toLowerCase().indexOf(q)>=0;
+  });
+  if(!rows.length){ box.innerHTML='<div class="empty-state"><div>🩺</div><div style="font-size:12px">'+(all.length?'لا توجد حسابات تطابق الفلتر':'لا توجد حسابات عيادات بعد — أنشئ أول حساب أعلاه')+'</div></div>'; return; }
+  box.innerHTML=rows.map(function(u){
+    var st=state(u), un=esc(u.username);
+    var dl=DUR_L[u.durationType]||(isPerm(u)?'دائم':'مؤقت');
+    var badge = st==='disabled' ? '<span style="background:rgba(255,34,68,.18);color:var(--danger);border:1px solid rgba(255,34,68,.4);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">🚫 معطّل</span>' :
+                st==='perm' ? '<span class="badge-perm">♾️ دائم</span>' :
+                st==='expired' ? '<span class="badge-exp">⛔ منتهي ('+esc(dl)+')</span>' :
+                '<span class="badge-temp">⏳ '+esc(dl)+'</span>';
+    var exp = isPerm(u) ? 'لا ينتهي' : (st==='expired'?'⛔ انتهى في ':'ينتهي: ')+fmtD(u.expiry)+(st!=='expired'?' ('+Math.ceil((u.expiry-Date.now())/DAY)+' يوم متبقي)':'');
+    return '<div class="user-row" style="'+(st==='disabled'?'opacity:.65;border-color:rgba(255,34,68,.35);':st==='expired'?'border-color:rgba(255,34,68,.35);':st==='warn'?'border-color:rgba(255,170,0,.45);':'')+'">'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span class="uname">🩺 '+un+'</span>'+badge+'</div>'+
+        (u.clinicName||u.doctorName?'<div style="font-size:11px;color:var(--primary);margin-top:3px">🏥 '+esc(u.clinicName||'')+(u.doctorName?' · 👨‍⚕️ '+esc(u.doctorName):'')+(u.address?' · 📍 '+esc(u.address):'')+(u.phone?' · 📞 <span dir="ltr">'+esc(u.phone)+'</span>':'')+'</div>':'')+
+        '<div style="font-size:10px;color:var(--text2);margin-top:2px">'+exp+' | أُنشئ: '+esc(u.created||'-')+(u.renewedAt?' | آخر تجديد: '+fmtD(u.renewedAt):'')+'</div>'+
+      '</div>'+
+      '<div class="ca-cd ca-cd-'+st+'" data-u="'+un+'" title="الوقت المتبقي">'+(isPerm(u)?'♾️ دائم':'⏱️ '+cdText(u.expiry-Date.now()))+'</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">'+
+        '<button class="btn btn-sm" style="background:'+(u.disabled?'rgba(0,245,147,.15)':'rgba(255,170,0,.12)')+';color:'+(u.disabled?'var(--success)':'var(--warning)')+';border:1px solid '+(u.disabled?'rgba(0,245,147,.4)':'rgba(255,170,0,.4)')+'" onclick="CLACC.toggle(\''+un+'\')">'+(u.disabled?'✅ تفعيل':'🚫 تعطيل')+'</button>'+
+        '<button class="btn btn-sm" style="background:rgba(0,245,147,.1);color:var(--success);border:1px solid rgba(0,245,147,.35)" onclick="CLACC.renew(\''+un+'\')">📅 تجديد</button>'+
+        '<button class="btn btn-sm" style="background:rgba(0,212,255,.1);color:var(--primary);border:1px solid rgba(0,212,255,.35)" onclick="CLACC.pw(\''+un+'\')">🔑 كلمة مرور</button>'+
+        '<button class="btn btn-sm btn-icon" onclick="CLACC.edit(\''+un+'\')" title="تعديل">✏️</button>'+
+        '<button class="btn btn-sm btn-d" onclick="CLACC.del(\''+un+'\')" title="حذف">🗑️</button>'+
+      '</div></div>';
+  }).join('');
+}
+function tick(){
+  var p=el('pane-clinicacc'); if(!p || !p.classList.contains('active')) return;
+  var redraw=false;
+  document.querySelectorAll('#ca-list .ca-cd[data-u]').forEach(function(n){
+    var u=CA.users[n.getAttribute('data-u')]; if(!u || isPerm(u)) return;
+    var st=state(u);
+    if(!n.classList.contains('ca-cd-'+st)) redraw=true;
+    n.textContent='⏱️ '+cdText(u.expiry-Date.now());
+  });
+  if(redraw) draw();
+}
+
+/* ═════ إنشاء ═════ */
+async function create(){
+  var u=(el('ca-uname').value||'').trim().toLowerCase();
+  var p=(el('ca-pass').value||'').trim();
+  var type=el('ca-type').value;
+  var cn=(el('ca-cname').value||'').trim(), dn=(el('ca-dname').value||'').trim();
+  var ad=(el('ca-addr').value||'').trim(), ph=(el('ca-phone').value||'').trim();
+  if(!u || !/^[a-z]+$/.test(u)) return err('❌ اسم المستخدم: أحرف إنجليزية صغيرة فقط');
+  if(!p || !/^[0-9]+$/.test(p)) return err('❌ كلمة المرور: أرقام فقط');
+  if(p.length<4) return err('❌ كلمة المرور: 4 أرقام على الأقل');
+  if(!cn) return err('❌ يرجى إدخال اسم العيادة');
+  if(!needAdmin()) return;
+  err('');
+  var btn=el('ca-create'); btn.disabled=true;
+  try{
+    var d=db();
+    var ex=(await d.ref('clinicAcc/users/'+u).once('value')).val();
+    if(ex){ err('❌ اسم المستخدم مستخدم مسبقاً'); return; }
+    var now=Date.now(), kh=await keyHash(u,p);
+    var rec={ username:u, type:type==='permanent'?'permanent':'temp', durationType:type, expiry:type==='permanent'?null:now+DUR[type]*DAY,
+      disabled:false, clinicName:cn, doctorName:dn, address:ad, phone:ph, created:new Date().toISOString().split('T')[0], createdAt:now };
+    var up={}; up['clinicAcc/users/'+u]=rec; up['clinicAcc/keys/'+kh]=u; up['clinicAcc/kidx/'+u]=kh;
+    await d.ref().update(up);
+    ['ca-uname','ca-pass','ca-cname','ca-dname','ca-addr','ca-phone'].forEach(function(i){ el(i).value=''; });
+    showNotif('✅ تم','تم إنشاء حساب العيادة: '+u+' ('+DUR_L[type]+') — يُستخدم عند أول فتح لبرنامج عيادتي','success');
+  }catch(e){ permErr(e); }
+  finally{ btn.disabled=false; }
+}
+function suggestU(){
+  var pre=['clinic','dr','med','care','heal','doc','cure','vita'], suf=['one','pro','plus','x','hub','care','med','line'];
+  var n, i=0; do{ n=pre[Math.floor(Math.random()*pre.length)]+suf[Math.floor(Math.random()*suf.length)]; i++; }while(CA.users[n] && i<50);
+  el('ca-uname').value=n;
+}
+function suggestP(){ el('ca-pass').value=String(Math.floor(100000+Math.random()*900000)); }
+
+/* ═════ تحكم ═════ */
+async function toggle(un){
+  var u=CA.users[un]; if(!u || !needAdmin()) return;
+  try{ await db().ref('clinicAcc/users/'+un).update({ disabled:!u.disabled });
+    showNotif(u.disabled?'تم التفعيل':'تم التعطيل',(u.disabled?'تم تفعيل ':'تم تعطيل ')+un+(u.disabled?'':' — سيُسجَّل خروجه من البرنامج تلقائياً'),u.disabled?'success':'warning'); }
+  catch(e){ permErr(e); }
+}
+function modal(title, body, foot){
+  var m=el('m-clacc');
+  el('m-clacc-title').innerHTML=title; el('m-clacc-body').innerHTML=body; el('m-clacc-foot').innerHTML=foot||'<button class="btn btn-s" onclick="closeModal(\'m-clacc\')">إلغاء</button>';
+  openModal('m-clacc');
+}
+function renew(un){
+  var u=CA.users[un]; if(!u) return; CA.target=un;
+  var now=Date.now(), info;
+  if(isPerm(u)) info='<div style="color:var(--success);font-weight:700">♾️ هذا الحساب دائم حالياً</div>';
+  else { var ex=u.expiry<=now; info='<div style="color:'+(ex?'var(--danger)':'var(--primary)')+';font-weight:700">'+(ex?'⛔ منتهي الصلاحية — التجديد يبدأ من الآن':'⏳ متبقٍ '+Math.ceil((u.expiry-now)/DAY)+' يوم — المدة الجديدة تُضاف بعد تاريخ الانتهاء الحالي')+'</div><div style="color:var(--text2);margin-top:4px">📅 تاريخ الانتهاء الحالي: '+fmtD(u.expiry)+'</div>'; }
+  var b=function(k,t,s,cls){ return '<button class="btn '+(cls||'btn-s')+'" onclick="CLACC.doRenew(\''+k+'\')" style="padding:13px;font-size:13px;font-weight:800">'+t+'<br><span style="font-size:10px;opacity:.75;font-weight:600">'+s+'</span></button>'; };
+  modal('📅 تجديد اشتراك: <span style="color:var(--primary)">'+esc(un)+'</span>',
+    '<div style="background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);border-radius:10px;padding:12px;margin-bottom:16px;font-size:12px">'+info+'</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+b('week','📅 أسبوع','+7 أيام')+b('month','📅 شهر','+30 يوم')+b('year','⭐ سنة','+365 يوم','btn-p')+b('permanent','♾️ دائم','بدون انتهاء')+'</div>'+
+    '<div class="fg" style="margin-top:12px"><label class="fl">أو عدد أيام مخصص</label><div style="display:flex;gap:7px"><input class="fc" id="ca-rdays" type="number" min="1" placeholder="مثال: 15"><button class="btn btn-s" onclick="CLACC.doRenew(\'custom\')">➕ إضافة</button></div></div>'+
+    (isPerm(u)?'':'<div style="margin-top:10px"><label style="font-size:12px;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="ca-rfromnow"> احتساب المدة من الآن (بدل الإضافة على المتبقي)</label></div>'));
+}
+async function doRenew(k){
+  var un=CA.target, u=CA.users[un]; if(!u || !needAdmin()) return;
+  var now=Date.now(), patch;
+  if(k==='permanent') patch={ type:'permanent', durationType:'permanent', expiry:null };
+  else {
+    var days = k==='custom' ? Math.floor(+((el('ca-rdays')||{}).value||0)) : DUR[k];
+    if(!days || days<1){ showNotif('تنبيه','اكتب عدد أيام صحيح','warning'); return; }
+    var fromNow=!!(el('ca-rfromnow')&&el('ca-rfromnow').checked);
+    var base=(!fromNow && !isPerm(u) && u.expiry>now)?u.expiry:now;
+    patch={ type:'temp', durationType:k==='custom'?(u.durationType&&u.durationType!=='permanent'?u.durationType:(days<=7?'week':days<=31?'month':'year')):k, expiry:base+days*DAY };
+  }
+  patch.renewedAt=now; patch.disabled=false;
+  try{ await db().ref('clinicAcc/users/'+un).update(patch); closeModal('m-clacc');
+    showNotif('✅ تم التجديد','تم تجديد '+un+(patch.expiry?' حتى '+fmtD(patch.expiry):' — دائم'),'success'); }
+  catch(e){ permErr(e); }
+}
+function pw(un){
+  CA.target=un;
+  modal('🔑 كلمة مرور جديدة: <span style="color:var(--primary)">'+esc(un)+'</span>',
+    '<div class="fg"><label class="fl">كلمة المرور الجديدة (أرقام فقط)</label><div style="display:flex;gap:7px"><input class="fc" id="ca-npw" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')"><button class="btn btn-s btn-sm" onclick="document.getElementById(\'ca-npw\').value=String(Math.floor(100000+Math.random()*900000))">🎲</button></div></div>'+
+    '<div style="font-size:11px;color:var(--text2)">كلمة المرور القديمة تتوقف فوراً. الأجهزة المفعّلة حالياً تبقى تعمل ما دام الاشتراك سارياً.</div>',
+    '<button class="btn btn-p" onclick="CLACC.doPw()">💾 حفظ</button><button class="btn btn-s" onclick="closeModal(\'m-clacc\')">إلغاء</button>');
+  setTimeout(function(){ var i=el('ca-npw'); if(i) i.focus(); },60);
+}
+async function doPw(){
+  var un=CA.target, p=((el('ca-npw')||{}).value||'').trim();
+  if(!/^[0-9]{4,}$/.test(p)){ showNotif('تنبيه','كلمة المرور أرقام فقط (4 على الأقل)','warning'); return; }
+  if(!needAdmin()) return;
+  try{
+    var d=db(), old=(await d.ref('clinicAcc/kidx/'+un).once('value')).val(), kh=await keyHash(un,p), up={};
+    if(old && old!==kh) up['clinicAcc/keys/'+old]=null;
+    up['clinicAcc/keys/'+kh]=un; up['clinicAcc/kidx/'+un]=kh;
+    await d.ref().update(up); closeModal('m-clacc'); showNotif('✅ تم','تم تغيير كلمة مرور '+un,'success');
+  }catch(e){ permErr(e); }
+}
+function edit(un){
+  var u=CA.users[un]; if(!u) return; CA.target=un;
+  var f=function(id,l,v,extra){ return '<div class="fg"><label class="fl">'+l+'</label><input class="fc" id="'+id+'" value="'+esc(v||'')+'" '+(extra||'')+'></div>'; };
+  modal('✏️ تعديل: <span style="color:var(--primary)">'+esc(un)+'</span>',
+    f('ca-e-cn','🏥 اسم العيادة',u.clinicName)+f('ca-e-dn','👨‍⚕️ اسم الطبيب',u.doctorName)+f('ca-e-ad','📍 العنوان',u.address)+f('ca-e-ph','📞 الهاتف',u.phone,'dir="ltr"')+
+    (isPerm(u)?'':f('ca-e-exp','📅 تاريخ الانتهاء',new Date(u.expiry).toISOString().slice(0,10),'type="date"')),
+    '<button class="btn btn-p" onclick="CLACC.doEdit()">💾 حفظ</button><button class="btn btn-s" onclick="closeModal(\'m-clacc\')">إلغاء</button>');
+}
+async function doEdit(){
+  var un=CA.target, u=CA.users[un]; if(!u || !needAdmin()) return;
+  var v=function(id){ var x=el(id); return x?(x.value||'').trim():''; };
+  var patch={ clinicName:v('ca-e-cn'), doctorName:v('ca-e-dn'), address:v('ca-e-ad'), phone:v('ca-e-ph') };
+  if(!patch.clinicName){ showNotif('تنبيه','اسم العيادة مطلوب','warning'); return; }
+  var ed=v('ca-e-exp');
+  if(ed && !isPerm(u)){ var t=new Date(ed+'T23:59:59').getTime(); if(!isNaN(t) && t!==u.expiry) patch.expiry=t; }
+  try{ await db().ref('clinicAcc/users/'+un).update(patch); closeModal('m-clacc'); showNotif('✅ تم','تم حفظ التعديلات','success'); }
+  catch(e){ permErr(e); }
+}
+async function del(un){
+  if(!confirm('حذف حساب العيادة "'+un+'" نهائياً؟\nسيُسجَّل خروجه من برنامج عيادتي ولن يعمل حتى يُنشأ له حساب جديد.')) return;
+  if(!needAdmin()) return;
+  try{
+    var d=db(), kh=(await d.ref('clinicAcc/kidx/'+un).once('value')).val(), up={};
+    up['clinicAcc/users/'+un]=null; up['clinicAcc/kidx/'+un]=null; if(kh) up['clinicAcc/keys/'+kh]=null;
+    await d.ref().update(up); showNotif('تم','تم حذف '+un,'success');
+  }catch(e){ permErr(e); }
+}
+function copyRules(){
+  var t=el('ca-rules').textContent;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ showNotif('✅','تم نسخ القاعدة','success'); }).catch(function(){ var r=document.createRange(); r.selectNode(el('ca-rules')); var s=getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); showNotif('✅','تم نسخ القاعدة','success'); });
+}
+
+window.CLACC={ load:load, draw:draw, create:create, suggestU:suggestU, suggestP:suggestP, toggle:toggle, renew:renew, doRenew:doRenew, pw:pw, doPw:doPw, edit:edit, doEdit:doEdit, del:del, copyRules:copyRules,
+  filter:function(f){ CA.f=f; draw(); }, search:function(q){ CA.q=q||''; draw(); }, _CA:CA, _keyHash:keyHash };
+
+/* ربط التبويب الجديد مع switchTab الموجودة بدون تعديلها */
+var _sw=window.switchTab;
+if(typeof _sw==='function'){
+  window.switchTab=function(name){ _sw.apply(this,arguments); if(name==='clinicacc') load(); };
+}
+CA.timer=setInterval(tick,1000);
 })();
 </script>
 </body>

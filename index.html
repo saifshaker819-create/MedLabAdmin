@@ -741,6 +741,19 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
           <label class="fl">📍 العنوان / المدينة</label>
           <input class="fc" id="adm-labaddr" placeholder="مثال: بغداد - المنصور">
         </div>
+        <div class="fg" style="margin-bottom:0">
+          <label class="fl">🛡️ الصلاحيات الأولية</label>
+          <select class="fc" id="adm-role">
+            <option value="">👑 كل الصلاحيات (افتراضي)</option>
+            <option value="receptionist">📋 استقبال</option>
+            <option value="lab_tech">🔬 تقني مختبر</option>
+            <option value="results_only">🧪 إدخال نتائج فقط</option>
+            <option value="print_only">🖨️ طباعة فقط</option>
+            <option value="store_manager">🛵 مدير المتجر</option>
+            <option value="store_staff">📥 موظف المتجر</option>
+            <option value="accountant">💼 محاسب</option>
+          </select>
+        </div>
       </div>
       <div id="adm-err" class="err-box"></div>
       <button class="btn btn-p" onclick="adminCreateUser()" style="margin-top:4px">💾 إنشاء المستخدم</button>
@@ -1732,6 +1745,7 @@ function adminCreateUser(){
   const type   = document.getElementById('adm-type').value;
   const labname=(document.getElementById('adm-labname').value||'').trim();
   const labaddr=(document.getElementById('adm-labaddr').value||'').trim();
+  const roleSel=(document.getElementById('adm-role')||{}).value||'';
   const err=document.getElementById('adm-err');
 
   if(!uname||!/^[a-z]+$/.test(uname)){ err.textContent='❌ اسم المستخدم: أحرف إنجليزية صغيرة فقط'; err.style.display='block'; return; }
@@ -1748,6 +1762,7 @@ function adminCreateUser(){
 
   hashPassword(pass).then(hashedPass=>{
     const newUser={username:uname,password:hashedPass,type:resolvedType,durationType:type,expiry,disabled:false,created:new Date().toISOString().split('T')[0],labName:labname,labAddress:labaddr};
+    if(roleSel && ROLES[roleSel]) newUser.permissions=_expandRole(ROLES[roleSel]);
     users.push(newUser);
     saveAdminUsers(users);
     registerLabInDirectory(uname,labname,labaddr,'');
@@ -1758,6 +1773,7 @@ function adminCreateUser(){
   document.getElementById('adm-pass').value='';
   document.getElementById('adm-labname').value='';
   document.getElementById('adm-labaddr').value='';
+  if(document.getElementById('adm-role')) document.getElementById('adm-role').value='';
   renderAdminUsers();
   const durLabel=type==='week'?'أسبوع':type==='month'?'شهر':type==='year'?'سنة':'دائم';
   showNotif('✅ تم','تم إنشاء حساب: '+uname+' ('+durLabel+') — يمكن استخدامه من أي جهاز الآن','success');
@@ -1830,7 +1846,7 @@ function _drawAdminUsers(){
       expText=expired?'⛔ انتهت الصلاحية':`ينتهي: ${new Date(u.expiry).toLocaleDateString('ar')} (${remaining} يوم متبقي)`;
     }
     const disabledBadge=isDisabled?`<span style="background:rgba(255,34,68,.18);color:var(--danger);border:1px solid rgba(255,34,68,.4);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">🚫 معطّل</span>`:'';
-    const permBadge=u.permissions?`<span style="background:rgba(139,63,255,.12);color:var(--secondary);border:1px solid rgba(139,63,255,.3);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700">🛡️ صلاحيات مخصصة</span>`:'';
+    const permBadge=u.permissions?`<span style="background:rgba(139,63,255,.12);color:var(--secondary);border:1px solid rgba(139,63,255,.3);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700" title="عدد الصلاحيات المفعّلة">🛡️ ${PERMISSIONS_DEF.filter(d=>_permValue(u.permissions,d.key)).length}/${PERMISSIONS_DEF.length} صلاحية</span>`:'';
     return `<div class="user-row" style="${isDisabled?'opacity:.65;border-color:rgba(255,34,68,.35);':''}">
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">

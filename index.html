@@ -340,6 +340,9 @@ body.light-mode #diag-result{background:rgba(0,0,0,.05);color:#2d3a4a}
 body.light-mode .login-log-row{border-bottom-color:#eef2f6}
 body.light-mode .perm-tog{background:rgba(0,0,0,.08);border-color:#c8d4e0}
 
+body.light-mode .perm-tog.on{background:linear-gradient(90deg,#00c470,#00e87a)!important;border-color:transparent!important}
+body.light-mode .perm-tog.on .perm-tog-t{right:calc(100% - 17px)}
+
 /* ── WELCOME POPUP ── */
 .welcome-popup-overlay{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px}
 .welcome-popup-box{background:linear-gradient(135deg,#070d1c,#0d1528);border:2px solid var(--primary);border-radius:18px;max-width:480px;width:100%;box-shadow:0 0 60px rgba(0,212,255,.25),0 20px 60px rgba(0,0,0,.8);animation:mIn .4s ease}
@@ -2228,6 +2231,11 @@ function openPermissions(uname){
 }
 
 function _permCount(){
+  PERMISSIONS_DEF.forEach(p=>{
+    const t=document.getElementById('permtog-'+p.key), st=document.getElementById('permst-'+p.key);
+    if(!t||!st) return; const on=t.classList.contains('on');
+    st.textContent=on?'مفعّل':'معطّل'; st.style.color=on?'#00a862':'#e0334c';
+  });
   const on = PERMISSIONS_DEF.filter(p=>{ const t=document.getElementById('permtog-'+p.key); return t && t.classList.contains('on'); }).length;
   const el = document.getElementById('perm-count');
   if(el) el.textContent = on+' / '+PERMISSIONS_DEF.length;
@@ -2263,8 +2271,11 @@ function _renderPermList(perms){
           <div style="font-size:10px;color:var(--text2)">${p.desc}</div>
         </div>
       </div>
-      <div class="perm-tog ${isOn?'on':''}" id="permtog-${p.key}" onclick="permToggle(this)">
-        <div class="perm-tog-t"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span id="permst-${p.key}" style="font-size:10px;font-weight:800;min-width:38px;text-align:center"></span>
+        <div class="perm-tog ${isOn?'on':''}" id="permtog-${p.key}" onclick="permToggle(this)">
+          <div class="perm-tog-t"></div>
+        </div>
       </div>
     </div>`;
     }).join('');

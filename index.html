@@ -1318,7 +1318,15 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
           <button class="btn btn-sm" onclick="applyRole('results_only')" style="background:rgba(0,245,147,.1);border-color:rgba(0,245,147,.35);color:var(--success)">🧪 إدخال نتائج فقط</button>
           <button class="btn btn-sm" onclick="applyRole('receptionist')" style="background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.35);color:var(--primary)">📋 استقبال</button>
           <button class="btn btn-sm" onclick="applyRole('lab_tech')" style="background:rgba(0,232,122,.12);border-color:rgba(0,232,122,.4);color:var(--accent)">🔬 تقني مختبر</button>
+          <button class="btn btn-sm" onclick="applyRole('store_manager')" style="background:rgba(255,140,0,.12);border-color:rgba(255,140,0,.4);color:#ff9a1f">🛵 مدير المتجر</button>
+          <button class="btn btn-sm" onclick="applyRole('store_staff')" style="background:rgba(255,140,0,.08);border-color:rgba(255,140,0,.3);color:#ff9a1f">📥 موظف المتجر</button>
+          <button class="btn btn-sm" onclick="applyRole('accountant')" style="background:rgba(0,212,255,.08);border-color:rgba(0,212,255,.3);color:var(--primary)">💼 محاسب</button>
           <button class="btn btn-sm" onclick="applyRole('full_admin')" style="background:rgba(139,63,255,.15);border-color:rgba(139,63,255,.4);color:var(--secondary)">👑 أدمن كامل</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11px;color:var(--text2)">
+          <span>الصلاحيات المفعّلة: <b id="perm-count" style="color:var(--primary)"></b></span>
+          <button type="button" class="btn btn-sm" style="padding:2px 8px;font-size:10px" onclick="permSetAll(true)">تفعيل الكل</button>
+          <button type="button" class="btn btn-sm" style="padding:2px 8px;font-size:10px" onclick="permSetAll(false)">إلغاء الكل</button>
         </div>
       </div>
       <div id="perm-list" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -2107,45 +2115,147 @@ async function saveChangePw(){
 // ═══════════════════════════════════════════════════
 // PERMISSIONS
 // ═══════════════════════════════════════════════════
-const PERMISSIONS_DEF=[
-  {key:'patients',   icon:'👥',label:'إدارة المرضى',      desc:'إضافة، تعديل، حذف المرضى'},
-  {key:'requests',   icon:'📋',label:'طلبات التحاليل',    desc:'إضافة وإدارة طلبات الفحص وطابور الانتظار'},
-  {key:'results',    icon:'🧪',label:'إدخال النتائج',     desc:'إدخال وتعديل نتائج التحاليل و Semen'},
-  {key:'culture',    icon:'🦠',label:'الزرع والحساسية',   desc:'إدخال نتائج الزرع'},
-  {key:'print',      icon:'🖨️',label:'الطباعة',           desc:'طباعة النتائج والتقارير'},
-  {key:'billing',    icon:'💰',label:'الفواتير والحسابات',desc:'إنشاء وعرض الفواتير والحسابات'},
-  {key:'doctors',    icon:'👨‍⚕️',label:'إدارة الأطباء',    desc:'إضافة وتعديل الأطباء المحولين'},
-  {key:'inventory',  icon:'📦',label:'المخزون',           desc:'إدارة المواد والمستلزمات'},
-  {key:'reports',    icon:'📊',label:'التقارير والإحصاء', desc:'عرض التقارير وضبط الجودة'},
-  {key:'settings',   icon:'⚙️',label:'الإعدادات والإعداد',desc:'الإعدادات، قاعدة التحاليل، الباقات، LIS'},
-  {key:'database',   icon:'💾',label:'قاعدة البيانات',    desc:'تصدير واستيراد البيانات'},
-  {key:'chat',       icon:'💬',label:'المحادثات',         desc:'التواصل مع المختبرات الأخرى'},
+/* مجموعات الصلاحيات (للعرض في نافذة الصلاحيات) */
+const PERM_GROUPS = [
+  { id:'reception', icon:'👥', label:'الاستقبال والمرضى' },
+  { id:'lab',       icon:'🧪', label:'المختبر والنتائج' },
+  { id:'finance',   icon:'💰', label:'المالية والتقارير' },
+  { id:'setup',     icon:'⚙️', label:'الإعداد والنظام' },
+  { id:'store',     icon:'🛵', label:'متجر خليك (طلبات المتجر)' },
+  { id:'comm',      icon:'💬', label:'التواصل والبوابات' },
 ];
-const ROLES={
-  results_only:{results:true},
-  receptionist:{patients:true,requests:true,billing:true,print:true,doctors:true},
-  lab_tech:{patients:true,requests:true,results:true,culture:true,print:true},
-  print_only:{print:true},
-  full_admin:Object.fromEntries(PERMISSIONS_DEF.map(p=>[p.key,true])),
+
+/* inherit: عند عدم وجود قيمة صريحة لهذه الصلاحية في الحساب (حسابات قديمة حُفظت قبل إضافتها)
+   تُؤخذ قيمة الصلاحية الأم، فيبقى سلوك الحسابات القديمة كما كان تماماً.  '*' = مسموح افتراضياً. */
+const PERMISSIONS_DEF = [
+  /* ── الاستقبال والمرضى ── */
+  { group:'reception', key:'patients',       icon:'👥', label:'إدارة المرضى',         desc:'إضافة وتعديل المرضى وعرض ملفاتهم' },
+  { group:'reception', key:'patients_delete',icon:'🗑️', label:'حذف المرضى',           desc:'حذف مريض (ومعه طلباته) نهائياً', inherit:'patients' },
+  { group:'reception', key:'requests',       icon:'📋', label:'طلبات التحاليل',        desc:'إضافة وإدارة طلبات الفحص' },
+  { group:'reception', key:'requests_delete',icon:'🗑️', label:'حذف الطلبات',          desc:'حذف طلب مع فاتورته ونتائجه', inherit:'requests' },
+  { group:'reception', key:'waitqueue',      icon:'⏳', label:'طابور الانتظار',        desc:'عرض وإدارة طابور الانتظار وشاشة الانتظار', inherit:'requests' },
+  { group:'reception', key:'doctors',        icon:'👨‍⚕️', label:'إدارة الأطباء',        desc:'إضافة وتعديل الأطباء المحولين' },
+  { group:'reception', key:'attendance',     icon:'🕒', label:'تسجيل الحضور',          desc:'حضور وانصراف الموظفين، بصمة الوجه، الإجازات والإحصائيات' },
+  /* ── المختبر والنتائج ── */
+  { group:'lab', key:'results',  icon:'🧪', label:'إدخال النتائج',        desc:'إدخال وتعديل نتائج التحاليل' },
+  { group:'lab', key:'semen',    icon:'🔬', label:'فحص السائل المنوي',     desc:'Semen Analysis', inherit:'results' },
+  { group:'lab', key:'ua_stool', icon:'🧫', label:'فحص الإدرار والبراز',    desc:'الفحص العام للإدرار والخروج', inherit:'results' },
+  { group:'lab', key:'esr',      icon:'⏱️', label:'عداد ESR',              desc:'مؤقت سرعة الترسيب', inherit:'results' },
+  { group:'lab', key:'culture',  icon:'🦠', label:'الزرع والحساسية',       desc:'إدخال نتائج الزرع' },
+  { group:'lab', key:'print',    icon:'🖨️', label:'الطباعة',               desc:'طباعة النتائج والتقارير' },
+  { group:'lab', key:'quality',  icon:'✅', label:'ضبط الجودة',            desc:'صفحة ضبط الجودة', inherit:'reports' },
+  /* ── المالية والتقارير ── */
+  { group:'finance', key:'billing', icon:'💰', label:'الفواتير والحسابات',  desc:'إنشاء وعرض الفواتير وتعديل الأسعار والمصروفات' },
+  { group:'finance', key:'reports', icon:'📊', label:'التقارير والإحصاء',   desc:'عرض التقارير والأرباح والإحصائيات' },
+  /* ── الإعداد والنظام ── */
+  { group:'setup', key:'settings',  icon:'⚙️', label:'الإعدادات العامة',     desc:'إعدادات المختبر والطباعة والأجهزة' },
+  { group:'setup', key:'testsdb',   icon:'🔬', label:'قاعدة التحاليل',       desc:'تعديل التحاليل ومعاييرها وأسعارها', inherit:'settings' },
+  { group:'setup', key:'packages',  icon:'📦', label:'الباقات الطبية',       desc:'إنشاء وتعديل الباقات', inherit:'settings' },
+  { group:'setup', key:'lis',       icon:'🖧', label:'ربط الأجهزة (LIS)',    desc:'ربط أجهزة التحليل بالنظام', inherit:'settings' },
+  { group:'setup', key:'inventory', icon:'🗂️', label:'المخزون',              desc:'إدارة المواد والمستلزمات' },
+  { group:'setup', key:'database',  icon:'💾', label:'قاعدة البيانات',       desc:'تصدير واستيراد البيانات والنسخ الاحتياطي' },
+  /* ── متجر خليك ── */
+  { group:'store', key:'store',         icon:'🛵', label:'فتح قسم المتجر',           desc:'عرض طلبات المتجر الواردة من المراجعين', inherit:'requests' },
+  { group:'store', key:'store_orders',  icon:'📥', label:'إدارة طلبات المتجر',       desc:'قبول/رفض الطلب، تحويله لميدلاب، إرسال النتيجة، حذف الطلب، حظر الأرقام', inherit:'requests' },
+  { group:'store', key:'store_chat',    icon:'💬', label:'مراسلات وتقييمات المتجر',  desc:'مراسلة المراجعين وعرض التقييمات', inherit:'requests' },
+  { group:'store', key:'store_catalog', icon:'🏷️', label:'التحاليل والأسعار والعروض', desc:'التحكم بما يظهر في المتجر: الأسعار، الخصومات، البنرات، الكوبونات، ونشر التحديثات', inherit:'requests' },
+  { group:'store', key:'store_dues',    icon:'📈', label:'إحصائيات ومستحقات المتجر', desc:'عرض أرباح المتجر والمستحقات والطباعة', inherit:'requests' },
+  { group:'store', key:'store_caps',    icon:'🏍️', label:'موظفو السحب',              desc:'إدارة موظفي السحب وإرسال الطلبات لهم', inherit:'requests' },
+  { group:'store', key:'store_settings',icon:'🛠️', label:'إعدادات المتجر',           desc:'فتح/إغلاق المتجر، الكود، الموقع، الشعار، أجور السحب', inherit:'requests' },
+  /* ── التواصل والبوابات ── */
+  { group:'comm', key:'chat',      icon:'💬', label:'محادثات المختبرات',     desc:'التواصل مع المختبرات الأخرى' },
+  { group:'comm', key:'devchat',   icon:'🖥️', label:'رسائل حاسبات المختبر',  desc:'المراسلة بين حاسبات المختبر المرتبطة بالحساب', inherit:'*' },
+  { group:'comm', key:'docportal', icon:'🩺', label:'بوابة الطبيب',          desc:'الدخول إلى بوابة الطبيب', inherit:'*' },
+];
+const PERM_BY_KEY = Object.fromEntries(PERMISSIONS_DEF.map(p=>[p.key,p]));
+
+const ROLES = {
+  // فقط إدخال نتائج
+  results_only: { results:true, semen:true, ua_stool:true, esr:true },
+  // استقبال فقط (بدون حذف)
+  receptionist: { patients:true, requests:true, billing:true, print:true, doctors:true, attendance:true, waitqueue:true,
+                  store:true, store_orders:true, store_chat:true,
+                  patients_delete:false, requests_delete:false },
+  // تقني مختبر كامل
+  lab_tech:     { patients:true, requests:true, results:true, culture:true, print:true, attendance:true, waitqueue:true,
+                  semen:true, ua_stool:true, esr:true, patients_delete:false, requests_delete:false },
+  // طباعة فقط
+  print_only:   { print:true },
+  // مدير المتجر: كل أقسام المتجر + استقبال الطلبات
+  store_manager:{ requests:true, waitqueue:true, patients:true, print:true,
+                  store:true, store_orders:true, store_chat:true, store_catalog:true, store_dues:true, store_caps:true, store_settings:true },
+  // موظف المتجر: يتابع الطلبات ويراسل فقط
+  store_staff:  { requests:true, store:true, store_orders:true, store_chat:true, patients_delete:false, requests_delete:false },
+  // محاسب: الفواتير والتقارير ومستحقات المتجر
+  accountant:   { billing:true, reports:true, quality:true, store:true, store_dues:true },
+  // كل الصلاحيات
+  full_admin:   Object.fromEntries(PERMISSIONS_DEF.map(p=>[p.key,true])),
 };
 
+/* قيمة الصلاحية الفعلية لمستخدم (مع الوراثة للحسابات القديمة) */
+function _permValue(perms, key){
+  if(perms[key] !== undefined) return perms[key] === true;
+  const d = PERM_BY_KEY[key];
+  if(d && d.inherit){
+    if(d.inherit === '*') return true;
+    return perms[d.inherit] === true;
+  }
+  return false;
+}
+/* تحويل دور جاهز إلى خريطة كاملة (الصلاحيات غير المذكورة تأخذ حكم الأم) */
+function _expandRole(role){
+  const out = {};
+  PERMISSIONS_DEF.forEach(p=>{
+    if(role[p.key] !== undefined) out[p.key] = role[p.key] === true;
+    else if(p.inherit && p.inherit !== '*' && p.group !== 'store') out[p.key] = role[p.inherit] === true;
+    else out[p.key] = false;
+  });
+  return out;
+}
+
 function openPermissions(uname){
-  _permTargetUser=uname;
-  document.getElementById('perm-uname-lbl').textContent=uname;
-  const users=getAdminUsers();
-  const u=users.find(x=>x.username===uname);
-  const perms=(u&&u.permissions&&Object.keys(u.permissions).length>0)
-    ? u.permissions
+  _permTargetUser = uname;
+  document.getElementById('perm-uname-lbl').textContent = uname;
+  const users = getAdminUsers();
+  const u = users.find(x=>x.username===uname);
+  // إذا لم تُحدَّد صلاحيات بعد → عرض كل الصلاحيات مفعّلة (حساب قديم / مدير)
+  // إذا حُدِّدت → عرض القيمة الفعلية (مع وراثة الصلاحيات الجديدة من الأم)
+  const perms = (u && u.permissions && Object.keys(u.permissions).length > 0)
+    ? Object.fromEntries(PERMISSIONS_DEF.map(p=>[p.key,_permValue(u.permissions,p.key)]))
     : Object.fromEntries(PERMISSIONS_DEF.map(p=>[p.key,true]));
   _renderPermList(perms);
   openModal('m-permissions');
 }
 
+function _permCount(){
+  const on = PERMISSIONS_DEF.filter(p=>{ const t=document.getElementById('permtog-'+p.key); return t && t.classList.contains('on'); }).length;
+  const el = document.getElementById('perm-count');
+  if(el) el.textContent = on+' / '+PERMISSIONS_DEF.length;
+  PERM_GROUPS.forEach(g=>{
+    const ks = PERMISSIONS_DEF.filter(p=>p.group===g.id);
+    const n = ks.filter(p=>{ const t=document.getElementById('permtog-'+p.key); return t && t.classList.contains('on'); }).length;
+    const ge = document.getElementById('permgc-'+g.id); if(ge) ge.textContent = n+'/'+ks.length;
+  });
+}
+function permToggle(el){ el.classList.toggle('on'); _permCount(); }
+function permSetGroup(gid, on){
+  PERMISSIONS_DEF.filter(p=>p.group===gid).forEach(p=>{
+    const t = document.getElementById('permtog-'+p.key); if(t) t.classList.toggle('on', !!on);
+  });
+  _permCount();
+}
+function permSetAll(on){
+  PERMISSIONS_DEF.forEach(p=>{ const t=document.getElementById('permtog-'+p.key); if(t) t.classList.toggle('on', !!on); });
+  _permCount();
+}
+
 function _renderPermList(perms){
-  const list=document.getElementById('perm-list');
-  list.innerHTML=PERMISSIONS_DEF.map(p=>{
-    const isOn=perms[p.key]===true;
-    return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:10px 14px">
+  const list = document.getElementById('perm-list');
+  list.innerHTML = PERM_GROUPS.map(g=>{
+    const items = PERMISSIONS_DEF.filter(p=>p.group===g.id).map(p=>{
+      const isOn = perms[p.key] === true;
+      return `
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:10px 14px">
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:18px">${p.icon}</span>
         <div>
@@ -2153,30 +2263,40 @@ function _renderPermList(perms){
           <div style="font-size:10px;color:var(--text2)">${p.desc}</div>
         </div>
       </div>
-      <div class="perm-tog ${isOn?'on':''}" id="permtog-${p.key}" onclick="this.classList.toggle('on')">
+      <div class="perm-tog ${isOn?'on':''}" id="permtog-${p.key}" onclick="permToggle(this)">
         <div class="perm-tog-t"></div>
       </div>
     </div>`;
+    }).join('');
+    return `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:6px 2px;border-bottom:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:800;color:var(--primary)">${g.icon} ${g.label} <span id="permgc-${g.id}" style="font-size:10px;color:var(--text2);font-weight:600"></span></div>
+      <div style="display:flex;gap:5px">
+        <button type="button" class="btn btn-sm" style="padding:2px 8px;font-size:10px" onclick="permSetGroup('${g.id}',true)">تفعيل الكل</button>
+        <button type="button" class="btn btn-sm" style="padding:2px 8px;font-size:10px" onclick="permSetGroup('${g.id}',false)">إلغاء الكل</button>
+      </div>
+    </div>${items}`;
   }).join('');
+  _permCount();
 }
 
 function applyRole(role){
-  const perms=ROLES[role]||{};
-  _renderPermList(perms);
+  _renderPermList(_expandRole(ROLES[role] || {}));
 }
 
 function savePermissions(){
-  const users=getAdminUsers();
-  const idx=users.findIndex(u=>u.username===_permTargetUser);
+  const users = getAdminUsers();
+  const idx = users.findIndex(u=>u.username===_permTargetUser);
   if(idx===-1){ showNotif('خطأ','المستخدم غير موجود','error'); return; }
-  const perms={};
+  const perms = {};
   PERMISSIONS_DEF.forEach(p=>{
-    const tog=document.getElementById('permtog-'+p.key);
-    perms[p.key]=tog?tog.classList.contains('on'):false;
+    const tog = document.getElementById('permtog-'+p.key);
+    // صريح: true إذا مفعّل، false إذا معطّل — لا يوجد undefined
+    perms[p.key] = tog ? tog.classList.contains('on') : false;
   });
-  users[idx].permissions=perms;
+  users[idx].permissions = perms;
   saveAdminUsers(users);
-  if(fbReady&&fbDb) fbDb.ref('admin/users/'+_permTargetUser+'/permissions').set(perms);
+  if(fbReady && fbDb) fbDb.ref('admin/users/'+_permTargetUser+'/permissions').set(perms);
   closeModal('m-permissions');
   renderAdminUsers();
   showNotif('✅ تم','تم حفظ الصلاحيات بنجاح','success');
@@ -3388,6 +3508,8 @@ function permName(k){
 }
 function permDiff(a,b){
   a=a||{}; b=b||{}; var add=[], rem=[];
+  try{ if(typeof _permValue==='function' && Object.keys(a).length && Object.keys(b).length){
+    var a2={}, b2={}; PERMISSIONS_DEF.forEach(function(p){ a2[p.key]=_permValue(a,p.key); b2[p.key]=_permValue(b,p.key); }); a=a2; b=b2; } }catch(e){}
   Object.keys(b).forEach(function(k){ if(b[k] && !a[k]) add.push(permName(k)); });
   Object.keys(a).forEach(function(k){ if(a[k] && !b[k]) rem.push(permName(k)); });
   var out=[];

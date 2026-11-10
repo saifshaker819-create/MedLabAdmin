@@ -2231,6 +2231,7 @@ const PERM_GROUPS = [
 const PERMISSIONS_DEF = [
   /* ── الاستقبال والمرضى ── */
   { group:'reception', key:'patients',       icon:'👥', label:'إدارة المرضى',         desc:'إضافة وتعديل المرضى وعرض ملفاتهم' },
+  { group:'reception', key:'patients_add',   icon:'➕', label:'إضافة مريض جديد',       desc:'تسجيل مريض جديد من «مريض جديد» وقائمة المرضى وقسم الطلبات (حسابات «تفعيل المتجر» مقفولة حتى تفتحها)', inherit:'patients' },
   { group:'reception', key:'patients_delete',icon:'🗑️', label:'حذف المرضى',           desc:'حذف مريض (ومعه طلباته) نهائياً', inherit:'patients' },
   { group:'reception', key:'requests',       icon:'📋', label:'طلبات التحاليل',        desc:'إضافة وإدارة طلبات الفحص' },
   { group:'reception', key:'requests_delete',icon:'🗑️', label:'حذف الطلبات',          desc:'حذف طلب مع فاتورته ونتائجه', inherit:'requests' },

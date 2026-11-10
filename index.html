@@ -776,6 +776,68 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
       </div>
     </div>
 
+    <div class="card" style="border-color:rgba(0,232,122,.35)">
+      <details>
+        <summary style="cursor:pointer;font-weight:800;font-size:13px">🛵 قاعدة Firebase لـ «تفعيل المتجر» (التسجيل الذاتي) — اضغط للعرض</summary>
+        <div style="font-size:12px;color:var(--text2);line-height:1.9;margin:10px 0">
+          تسمح لأي مختبر بـ <b>إنشاء</b> حساب جديد فقط بصلاحيات المتجر المحددة — لا تعديل لأي حساب موجود، ولا صلاحيات إضافية، ولا قراءة للرموز.
+          افتح Firebase Console ← مشروع <b>rescuse</b> ← Realtime Database ← Rules، واستبدل كتلة <code>"admin": { … }</code> كاملة بهذه، ثم Publish.
+        </div>
+        <pre id="sr-rules" dir="ltr" style="background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;overflow:auto;text-align:left;max-height:340px">    "admin": {
+      "users": {
+        ".read": "auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402'",
+        ".write": "auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402'",
+        "$u": {
+          ".read": true,
+          ".write": "auth != null &amp;&amp; !data.exists() &amp;&amp; $u.matches(/^[a-z]{3,20}$/) &amp;&amp; $u !== 'saif' &amp;&amp; newData.child('selfReg').val() === true &amp;&amp; !root.child('admin/pw/'+$u).exists() &amp;&amp; newData.parent().parent().child('pw/'+$u).exists()",
+          ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || (newData.hasChildren(['username','type','durationType','disabled','selfReg','maxDevices','created','createdAt','permissions']) &amp;&amp; newData.child('username').val() === $u)",
+          "username":     { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === $u" },
+          "type":         { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === 'permanent'" },
+          "durationType": { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === 'permanent'" },
+          "disabled":     { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === false" },
+          "selfReg":      { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === true" },
+          "maxDevices":   { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === 1" },
+          "created":      { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || (newData.isString() &amp;&amp; newData.val().length === 10)" },
+          "createdAt":    { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === now" },
+          "permissions": {
+            "$p": { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || (newData.isBoolean() &amp;&amp; (newData.val() === false || $p.matches(/^(patients|requests|results|semen|ua_stool|esr|culture|print|testsdb|database|store|store_orders|store_chat|store_catalog|store_dues|store_caps|store_settings)$/)))" }
+          },
+          "$f": { ".validate": "auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402'" }
+        }
+      },
+      "pw": {
+        ".read": "auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402'",
+        ".write": "auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402'",
+        "$u": {
+          ".write": "auth != null &amp;&amp; !data.exists() &amp;&amp; !root.child('admin/users/'+$u).exists() &amp;&amp; newData.parent().parent().child('users/'+$u+'/selfReg').val() === true",
+          ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || (newData.isString() &amp;&amp; newData.val().matches(/^[0-9a-f]{64}$/))"
+        }
+      },
+      "chk": {
+        "$u": {
+          ".read": false,
+          ".write": "auth != null &amp;&amp; (auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402' || (root.child('admin/pw/'+$u).exists() &amp;&amp; newData.child('h').val() === root.child('admin/pw/'+$u).val()))",
+          ".validate": "newData.hasChildren(['h', 'ts'])",
+          "h": {
+            ".validate": "newData.isString() &amp;&amp; newData.val().length === 64"
+          },
+          "ts": {
+            ".validate": "newData.isNumber() &amp;&amp; newData.val() === now"
+          },
+          "$o": {
+            ".validate": false
+          }
+        }
+      },
+      "pwMoved": {
+        ".read": true,
+        ".write": "auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402'"
+      }
+    },</pre>
+        <button class="btn btn-s btn-sm" onclick="(function(){var t=document.getElementById('sr-rules').textContent;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){showNotif('✅','تم نسخ القاعدة','success');}).catch(function(){var r=document.createRange();r.selectNodeContents(document.getElementById('sr-rules'));var s=getSelection();s.removeAllRanges();s.addRange(r);showNotif('انسخ','القاعدة محددة — اضغط Ctrl+C','info');});})()">📋 نسخ القاعدة</button>
+      </details>
+    </div>
+
   </div><!-- /pane-users -->
 
   <!-- ══════════════════════════════════════════
@@ -1539,7 +1601,10 @@ function saveAdminUsers(users){
   localStorage.setItem(ADMIN_KEY, JSON.stringify(users));
   if(fbReady && fbDb && users.length>0){
     const obj=_usersForFirebase(users);
-    fbDb.ref('admin/users').set(obj.users).catch(e=>console.error(e));
+    /* update لكل حساب (لا set للقائمة كاملة): الحذف يتم صراحةً بـ remove، وحساب «تفعيل المتجر»
+       الذي سجّله مختبر بعد آخر تحميل للقائمة لا يُمسح عند حفظ أي تعديل آخر */
+    const _up={}; Object.keys(obj.users).forEach(k=>{ if(k && !/[.#$\[\]\/]/.test(k)) _up[k]=obj.users[k]; });
+    if(Object.keys(_up).length) fbDb.ref('admin/users').update(_up).catch(e=>console.error(e));
     if(obj.pwN) _pwWriteMany(obj.pw);
   }
 }
@@ -1573,7 +1638,7 @@ async function _pwWriteMany(map){
   if(ch){ _fbUsersCache=cache; localStorage.setItem(ADMIN_KEY, JSON.stringify(cache)); }
 }
 function _pwMove(oldU,newU){
-  if(!(_pwMoved&&fbReady&&fbDb) || !oldU || !newU || oldU===newU) return Promise.resolve();
+  if(!(fbReady&&fbDb) || !oldU || !newU || oldU===newU) return Promise.resolve();
   return fbDb.ref('admin/pw/'+oldU).once('value').then(sn=>{
     const v=sn.val(), up={}; up['admin/pw/'+oldU]=null; up['admin/chk/'+oldU]=null; if(v) up['admin/pw/'+newU]=v;
     return fbDb.ref().update(up);
@@ -1801,7 +1866,24 @@ function _syncBtnStyle(enabled){
     ? 'background:rgba(0,232,122,.12);color:#00e87a;border:1px solid rgba(0,232,122,.4)'
     : 'background:rgba(255,255,255,.05);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.15)';
 }
+/* 🛵 مراقبة حيّة لقائمة المستخدمين: حساب «تفعيل المتجر» الجديد يظهر فوراً مع تنبيه */
+let _admUsersLive=false, _admKnownUsers=null;
+function _admWatchUsers(){
+  if(_admUsersLive || !(fbReady&&fbDb&&fbIsAdmin)) return;
+  _admUsersLive=true;
+  fbDb.ref('admin/users').on('value', snap=>{
+    const raw=snap.val(); if(!raw) return;
+    const users=_usersObjToArr(raw);
+    if(_admKnownUsers){
+      users.forEach(u=>{ if(u && u.username && u.selfReg && !_admKnownUsers[u.username]) showNotif('🛵 حساب جديد','سجّل مختبر حساباً من «تفعيل المتجر»: '+u.username,'success'); });
+    }
+    _admKnownUsers={}; users.forEach(u=>{ if(u&&u.username) _admKnownUsers[u.username]=1; });
+    _fbUsersCache=users; localStorage.setItem(ADMIN_KEY,JSON.stringify(users));
+    _drawAdminUsers();
+  }, ()=>{ _admUsersLive=false; });
+}
 function renderAdminUsers(){
+  try{ _admWatchUsers(); }catch(e){}
   if(fbReady&&fbDb){
     fbDb.ref('admin/users').once('value').then(snap=>{
       const raw=snap.val();
@@ -1851,7 +1933,7 @@ function _drawAdminUsers(){
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span class="uname">👤 ${u.username}</span>
-          ${typeBadge}${disabledBadge}${permBadge}
+          ${typeBadge}${disabledBadge}${permBadge}${u.selfReg?`<span style="background:rgba(0,255,163,.1);color:#00e87a;border:1px solid rgba(0,232,122,.4);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:800" title="أنشأه المختبر بنفسه من زر «تفعيل المتجر» — صلاحيات المتجر فقط حتى تفتح له الباقي من 🛵 صلاحيات">🛵 تسجيل ذاتي</span>`:''}
         </div>
         ${u.labName?`<div style="font-size:10px;color:var(--primary);margin-top:3px">🏥 ${u.labName}${u.labAddress?' · '+u.labAddress:''}</div>`:''}
         <div style="font-size:10px;color:var(--text2);margin-top:1px">${expText} | أُنشئ: ${u.created||'-'}</div>

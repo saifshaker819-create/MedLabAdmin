@@ -2406,10 +2406,21 @@ function savePermissions(){
   });
   users[idx].permissions = perms;
   saveAdminUsers(users);
-  if(fbReady && fbDb) fbDb.ref('admin/users/'+_permTargetUser+'/permissions').set(perms);
+  const _tgt = _permTargetUser;
   closeModal('m-permissions');
   renderAdminUsers();
-  showNotif('✅ تم','تم حفظ الصلاحيات بنجاح','success');
+  /* ✅ لا نقول «تم» قبل التأكد من السيرفر: الكتابة تُقرأ من جديد وتُقارن */
+  if(!(fbReady && fbDb && fbIsAdmin)){
+    showNotif('⚠️ لم يُحفظ على السيرفر','دخول الأدمن غير فعّال (وضع القراءة فقط) — حدّث الصفحة وأدخل كلمة مرور الأدمن','error');
+    return;
+  }
+  const _pr = fbDb.ref('admin/users/'+_tgt+'/permissions');
+  _pr.set(perms).then(()=>_pr.once('value')).then(sn=>{
+    const v = sn.val() || {};
+    const bad = Object.keys(perms).filter(k=>v[k]!==perms[k]);
+    if(bad.length) showNotif('⚠️ السيرفر لم يطابق','هذه الصلاحيات لم تُحفظ: '+bad.join('، '),'error');
+    else showNotif('✅ تم الحفظ على السيرفر','الإعدادات العامة: '+(v.settings===true?'مفعّلة':'معطّلة')+' — عدد المفعّل '+Object.keys(v).filter(k=>v[k]===true).length,'success');
+  }).catch(e=>showNotif('❌ رفض Firebase الحفظ',(e&&(e.code||e.message))||'خطأ','error'));
 }
 
 // ═══════════════════════════════════════════════════

@@ -800,7 +800,7 @@ body.light-mode .pza-actions{border-top-color:#e3e9f0}
           "created":      { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || (newData.isString() &amp;&amp; newData.val().length === 10)" },
           "createdAt":    { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || newData.val() === now" },
           "permissions": {
-            "$p": { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || (newData.isBoolean() &amp;&amp; (newData.val() === false || $p.matches(/^(patients|requests|results|semen|ua_stool|esr|culture|print|testsdb|database|store|store_orders|store_chat|store_catalog|store_dues|store_caps|store_settings)$/)))" }
+            "$p": { ".validate": "(auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402') || (newData.isBoolean() &amp;&amp; (newData.val() === false || $p.matches(/^(patients|requests|results|semen|ua_stool|esr|culture|print|settings|testsdb|database|store|store_orders|store_chat|store_catalog|store_dues|store_caps|store_settings)$/)))" }
           },
           "$f": { ".validate": "auth != null &amp;&amp; auth.uid === 'Dfo7Q5qPpCe9PfQHKAjjeZu8i402'" }
         }

@@ -1982,6 +1982,12 @@ function adminToggleUser(uname){
   showNotif(u.disabled?'تم التعطيل':'تم التفعيل',
     u.disabled?`تم تعطيل حساب ${uname}`:`تم تفعيل حساب ${uname}`,
     u.disabled?'warning':'success');
+  // 🧪 متجر هذا المختبر في «خليك»: يختفي عند التعطيل ويعود عند التفعيل (لا يُحذف شيء — معلوماته وتقييمه تبقى)
+  const off=!!u.disabled;
+  if(typeof window.acAcctSet==='function') window.acAcctSet(uname, off).then(function(r){
+    if(r && r.ok){ if(r.n) showNotif('متجر خليك', off?'اختفى متجر '+uname+' من تطبيق خليك':'عاد متجر '+uname+' للظهور في تطبيق خليك', off?'warning':'success'); }
+    else showNotif('متجر خليك لم يُحدَّث', 'افتح تبويب «الحسابات» وأدخل كلمة مرور مشروع المتجر — يُطبَّق إخفاء/إظهار المتجر تلقائياً عند فتحه', 'warning');
+  });
 }
 
 function adminResetSessions(uname){
@@ -4730,6 +4736,7 @@ async function loadAll(){
     A.data={ reg:r[0].val()||{}, ctl:r[1].val()||{}, pay:r[2].val()||{}, led:r[3].val()||{}, at:Date.now() };
     A.users=r[4].val()||{};
     A.err='';
+    await acctSync();
     await autoSuspend();
   }catch(e){
     A.data=null;
@@ -4769,6 +4776,39 @@ function rows(){
   return out;
 }
 
+/* ───────── حساب ميدلاب معطّل ⇒ متجره مخفي من «خليك» ─────────
+   يُستخدم نفس ctl/{sid}/off (يخفيه تطبيق المراجع ويمنع الطلبات) بسبب مميّز ACC_WHY، فإعادة تفعيل الحساب
+   تعيد تشغيل المتجر فقط إن كان موقوفاً بسبب التعطيل (لا تمسّ إيقاف المستحقات). لا يُحذف أي شيء. */
+var ACC_WHY='حساب ميدلاب معطّل من الإدارة';
+function acctPatch(c, off){
+  c=c||{};
+  if(off && !c.off) return {off:true, why:ACC_WHY, ts:Date.now()};
+  if(!off && c.off && c.why===ACC_WHY) return {off:false, why:'', ts:Date.now()};
+  return null;
+}
+async function acctSync(){
+  var n=0;
+  for(var sid in A.data.reg){ var g=A.data.reg[sid]||{}, u=A.users[g.acct]; if(!u) continue;
+    var p=acctPatch(A.data.ctl[sid], !!u.disabled); if(!p) continue;
+    try{ await A.db.ref('ctl/'+sid).update(p); A.data.ctl[sid]=Object.assign({},A.data.ctl[sid]||{},p); n++; }catch(e){}
+  }
+  if(n) say('متجر خليك','تمت مزامنة '+n+' متجر مع حالة حسابات ميدلاب (المعطّل مخفي من خليك)','info');
+}
+window.acAcctSet=async function(un, off){
+  try{
+    await connect();
+    var reg=(await A.db.ref('reg').once('value')).val()||{}, n=0;
+    var sids=Object.keys(reg).filter(function(sid){ return reg[sid] && reg[sid].acct===un; });
+    for(var i=0;i<sids.length;i++){ var sid=sids[i];
+      var c=(await A.db.ref('ctl/'+sid).once('value')).val()||{}, p=acctPatch(c, off); if(!p) continue;
+      await A.db.ref('ctl/'+sid).update(p); n++;
+      if(A.data){ A.data.reg[sid]=reg[sid]; A.data.ctl[sid]=Object.assign({},c,p); }
+    }
+    if(A.users && A.users[un]) A.users[un].disabled=!!off;
+    if(n && A.data) render();
+    return {ok:true, n:n, sids:sids.length};
+  }catch(e){ return {ok:false, err:(e&&e.message)||''}; }
+};
 /* ───────── الإيقاف التلقائي ───────── */
 async function autoSuspend(){
   var hits=[];
@@ -4836,7 +4876,7 @@ function listHtml(){
         var u=r.user, uOff=u&&(u.disabled||(u.expiry&&Date.now()>u.expiry));
         var acct='<b>'+esc(r.acct||'—')+'</b>'+(r.labName?'<div class="ac-muted">🏥 '+esc(r.labName)+'</div>':'')+(!u&&r.sid?'<div class="ac-warn-s">⚠️ الحساب غير موجود في المستخدمين</div>':'')+(uOff?'<div class="ac-warn-s">اشتراك ميدلاب منتهٍ/معطّل</div>':'');
         if(!r.sid) return '<tr class="ac-dim"><td>'+acct+'</td><td colspan="8" class="ac-muted">لم يفعّل المتجر بعد</td></tr>';
-        var st=r.ctl.off?'<span class="ac-pill bad">⛔ موقوف</span>':'<span class="ac-pill ok">يعمل</span>';
+        var st=r.ctl.off?(r.ctl.why===ACC_WHY?'<span class="ac-pill bad" title="مخفي من خليك لأن حساب ميدلاب معطّل — يعود عند تفعيل الحساب">⛔ الحساب معطّل</span>':'<span class="ac-pill bad">⛔ موقوف</span>'):'<span class="ac-pill ok">يعمل</span>';
         function cell(s){ return s.tests?'<b>'+fmt(s.com)+'</b><div class="ac-muted">'+s.tests+' تحليل · '+s.acc+' طلب</div>':'<span class="ac-muted">—</span>'; }
         return '<tr><td>'+acct+'</td><td><span dir="ltr" class="ac-code">'+esc(r.code)+'</span><br>'+st+'</td><td>'+cell(r.d)+'</td><td>'+cell(r.m)+'</td><td>'+cell(r.y)+'</td>'+
           '<td><b style="color:'+(r.bal>0?'var(--danger)':'var(--success,#00c853)')+'">'+fmt(r.bal)+'</b>'+(r.ctl.lim?'<div class="ac-muted">الحد '+fmt(r.ctl.lim)+(r.ctl.auto?' · تلقائي':'')+'</div>':'')+'</td>'+
